@@ -179,4 +179,11 @@ sketch
 # Ignore code-workspaces
 *.code-workspace
 
+
+#server
+.backend/node_modules
+
+#client
+.frontend/node_modules
+
 # End of https://www.toptal.com/developers/gitignore/api/node,react,visualstudiocode
