@@ -8,18 +8,21 @@ const joinRoom = document.querySelector(".joinRoom");
 
 form.addEventListener("submit", (e) => {
   e.preventDefault();
-  const msg = input.value;
-  const room = roomInput.value;
-  if (msg === "") return;
-  createMessage(username, msg);
-  socket.emit("chat message", msg, room);
+  const message = input.value;
+  if (message === "") return;
+  createMessage(username, message);
+  socket.emit("chat message", message);
   input.value = "";
 });
 joinRoom.addEventListener("click", (e) => {
   e.preventDefault();
-
   const room = roomInput.value;
+  if (room === "") return;
+
   socket.emit("join room", room, (message) => {
+    roomInput.value = "";
+    socket.emit("chat message", "joined room");
+
     createMessage(username, message);
   });
 });
@@ -28,8 +31,8 @@ socket.on("connect", () => {
   socket.emit("register username", username);
 });
 
-socket.on("chat message", (msg, username) => {
-  createMessage(username, msg);
+socket.on("chat message", (username, message) => {
+  createMessage(username, message);
 });
 
 function createMessage(username, message) {
