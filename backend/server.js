@@ -16,9 +16,9 @@ io.on("connection", (socket) => {
   let username = "";
   let room = ""
 
-  socket.on("chat message", (message, room) => {
+  socket.on("chat message", (message) => {
     // if (room === "") socket.broadcast.emit("chat message", msg, username);
-    socket.to(room).emit("chat message", message, username);
+    socket.to(room).emit("chat message", username, message);
   });
   socket.on("register username", (newUsername) => {
     username = newUsername;

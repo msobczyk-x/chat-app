@@ -9,20 +9,20 @@ const joinRoom = document.querySelector(".joinRoom");
 form.addEventListener("submit", (e) => {
   e.preventDefault();
   const message = input.value;
-  const room = roomInput.value;
   if (message === "") return;
   createMessage(username, message);
-  socket.emit("chat message", message, room);
+  socket.emit("chat message", message);
   input.value = "";
 });
 joinRoom.addEventListener("click", (e) => {
   e.preventDefault();
-
   const room = roomInput.value;
   if (room === "") return;
 
   socket.emit("join room", room, (message) => {
     roomInput.value = "";
+    socket.emit("chat message", "joined room");
+
     createMessage(username, message);
   });
 });
