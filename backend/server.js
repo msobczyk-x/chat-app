@@ -14,17 +14,19 @@ app.get("/", (req, res) => {
 
 io.on("connection", (socket) => {
   let username = "";
+  let room = ""
 
-  socket.on("chat message", (msg, room) => {
-    if (room === "") socket.broadcast.emit("chat message", msg, username);
-    else socket.to(room).emit("chat message", msg, username);
+  socket.on("chat message", (message, room) => {
+    // if (room === "") socket.broadcast.emit("chat message", msg, username);
+    socket.to(room).emit("chat message", message, username);
   });
   socket.on("register username", (newUsername) => {
     username = newUsername;
   });
-  socket.on("join room", (room, cb) => {
+  socket.on("join room", (newRoom, sendMessage) => {
     socket.join(room);
-    cb(`Joined room:'${room}'`);
+    room = newRoom;
+    sendMessage(`Joined room:'${room}'`);
   });
 });
 
