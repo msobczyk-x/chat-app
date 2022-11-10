@@ -2,6 +2,8 @@ import React from "react";
 
 
 const Profile = () => {
+  const username = localStorage.getItem("username");
+
   return (
     <div className="Profile ">
     <div className="profile-menu flex flex-row justify-center items-center w-60">
@@ -14,11 +16,14 @@ const Profile = () => {
         <div className="profile-pic pl-4">
         <svg className=" w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0S96 57.3 96 128s57.3 128 128 128zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/></svg>
         </div>
-        <div className="profile-name p-2">John Doe</div>
-        <div className="dropdown">
-          <svg className="w-2" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 512">
-            <path d="M137.4 374.6c12.5 12.5 32.8 12.5 45.3 0l128-128c9.2-9.2 11.9-22.9 6.9-34.9s-16.6-19.8-29.6-19.8L32 192c-12.9 0-24.6 7.8-29.6 19.8s-2.2 25.7 6.9 34.9l128 128z" />
-          </svg>
+        <div className="profile-name p-2">{username}</div>
+        <div className="logout bg-slate-800 p-2 rounded-lg text-slate-200 text-bold text-sm flex ml-10 transition ease-in-out hover:scale-110 delay-150 hover:bg-slate-600" onClick={() => {
+          localStorage.removeItem("username");
+          window.location.reload();
+        }}>
+          
+        <svg className="w-5 fill-slate-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M160 96c17.7 0 32-14.3 32-32s-14.3-32-32-32H96C43 32 0 75 0 128V384c0 53 43 96 96 96h64c17.7 0 32-14.3 32-32s-14.3-32-32-32H96c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32h64zM504.5 273.4c4.8-4.5 7.5-10.8 7.5-17.4s-2.7-12.9-7.5-17.4l-144-136c-7-6.6-17.2-8.4-26-4.6s-14.5 12.5-14.5 22v72H192c-17.7 0-32 14.3-32 32l0 64c0 17.7 14.3 32 32 32H320v72c0 9.6 5.7 18.2 14.5 22s19 2 26-4.6l144-136z"/></svg>
+        Logout
         </div>
     </div>
     </div>
