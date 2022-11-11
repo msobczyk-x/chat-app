@@ -2,27 +2,34 @@ import React, {useEffect, useState} from "react"
 import Header from "../header/Header"
 import MainChat from "./MainChat"
 import { io } from "socket.io-client";
-import { Socket } from "socket.io-client";
-import SocketContext from "../../utils/socket-context";
+import {SocketContext, sc} from "../../utils/socket";
 
 
-const socket = io(`http://${window.location.hostname}:3000`);
 const Main = () => {
+const username = localStorage.getItem("username");
+
 const [isConnected, setIsConnected] = useState(false);
         useEffect(() => {
-                socket.on('connect', () => {
+                sc.on('connect', () => {
                   setIsConnected(true);
-                })
+                  sc.emit("register username", username);
+                  sc.emit("join room", "", (response: string) => {
+                    console.log(response);
+                  })
+                });
+           
             
                 return () => {
-                  socket.off('connect')
+                  sc.off('connect')
+                  sc.off("register username");
+                  sc.off("join room");
                 }
               }, [])
 return (
 <div className="">
-        <SocketContext.Provider value={socket}>
+        <SocketContext.Provider value={sc}>
         <Header/>
-        {isConnected ? <MainChat/> : <div className="text-extrabold text-xl">Connecting...</div>}
+        {isConnected ? <MainChat /> : <div className="w-full h-full text-extrabold text-3xl text-center">Connecting...</div>}
         </SocketContext.Provider>
         </div>
 )
