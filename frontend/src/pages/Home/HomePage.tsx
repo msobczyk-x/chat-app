@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-
+import Header from "../../components/Header/Header";
 const HomePage = () => {
   const [username, setUsername] = useState("");
 
@@ -9,27 +9,7 @@ const HomePage = () => {
     window.location.reload();
   };
   return (
-    <div className="HomePage w-full h-screen flex flex-col">
-      <div className="header flex flex-row justify-between  mt-5  mx-10 items-center ">
-        <div className="logo w-60 font-sans font-bold text-3xl text-left pl-5">
-          Chatbea
-        </div>
-        <div className="menu flex">
-          <div className="menu-item text-lg font-bold font-sans  ">Home</div>
-          <div className="menu-item text-lg font-bold font-sans  pl-10">
-            Discover
-          </div>
-          <div className="menu-item text-lg font-bold font-sans  pl-10">
-            Features
-          </div>
-          <div className="menu-item text-lg font-bold font-sans  pl-10">
-            Safety
-          </div>
-          <div className="login menu-item  text-lg font-bold font-sans pl-16">
-            Log in
-          </div>
-        </div>
-      </div>
+    <div className="HomePage w-full h-full flex flex-col">
       <div className="HomePage-wrapper h-96 flex flex-col justify-center items-center rounded  backdrop-blur">
         <div className="HomePage-title font-sans font-bold text-3xl text-left pl-5">
           Enter your username

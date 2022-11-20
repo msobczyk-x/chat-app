@@ -5,7 +5,8 @@ const Profile = () => {
   const username = localStorage.getItem("username");
 
   return (
-    <div className="Profile ">
+    <div className="Profile flex flex-row justify-between w-full ">
+      <div className="logo w-60 font-sans font-bold text-3xl text-left pl-5">Vibe</div>
     <div className="profile-menu flex flex-row justify-center items-center w-60">
       <div className="notification p-4">
         <svg className="w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">

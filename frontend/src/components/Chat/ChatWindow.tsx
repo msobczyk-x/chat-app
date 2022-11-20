@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 
-import { SocketContext, sc } from "../../utils/socket";
+import { SocketContext, sc } from "../../context/socket";
 
 type Message = {
   username: string;
