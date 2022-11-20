@@ -18,7 +18,7 @@ const Menu = () => {
       <div className="menu flex justify-center items-center">
         <div
           ref={refHome}
-          className="menu-item home text-lg font-bold font-sans border-b-2 border-blue-600 active"
+          className="menu-item home text-lg font-bold font-sans"
         >
           <Link to="/">Home</Link>
         </div>

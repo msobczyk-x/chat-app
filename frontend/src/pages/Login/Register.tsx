@@ -7,7 +7,7 @@ const LoginPage = () => {
   return (
     <div className="login-page w-full h-full flex flex-col justify-center items-center">
     <div className="bg-slate-100 backdrop-blur-3xl w-96 flex flex-col justify-center items-center rounded-lg h-96 m-48">
-      <div className="text-3xl font-bold ">Login</div>
+      <div className="text-3xl font-bold ">Sign up</div>
       <form className="flex flex-col justify-center items-center p-5"
         onSubmit={(e) => {
           e.preventDefault();
@@ -30,10 +30,8 @@ const LoginPage = () => {
         />
         <button 
         className="w-80 font-bold h-10 rounded-lg bg-slate-300 p-2 mb-5 hover:bg-slate-600 transition ease-in-out delay-150"
-        type="submit">Login</button>
-        <Link to="/register"
-        className=" text-center w-80 font-bold h-10 rounded-lg bg-slate-300 p-2 mb-5 hover:bg-slate-600 transition ease-in-out delay-150"
-        type="button">Not yet signed up ? Sign up</Link>
+        type="submit">Sign up</button>
+        
       </form>
     </div>
     </div>

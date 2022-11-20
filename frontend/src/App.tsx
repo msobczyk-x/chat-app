@@ -10,7 +10,7 @@ import Safety from "./pages/Home/Safety"
 import NotFound from "./pages/Error/NotFound"
 import MainOutlet from "./pages/MainOutlet";
 import LoginPage from "./pages/Login/LoginPage";
-
+import Register from "./pages/Login/Register";
 const checkUserLoggedIn = () => {
   const token = localStorage.getItem("username");
   if (token) {
@@ -38,6 +38,7 @@ function App() {
           <Route path="features" element={<Features/>} />
           <Route path="safety" element={<Safety/>} />
           <Route path="login" element={<LoginPage/>} />
+          <Route path="register" element={<Register/>} />
           <Route path="*" element={<NotFound/>} />
           </Route>
           </Routes>
