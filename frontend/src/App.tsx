@@ -1,18 +1,47 @@
-import React from "react";
-import Profile from "./components/header/Profile";
+import React, {useState, useEffect} from "react";
 import "./App.css";
-import MainChat from "./components/main/MainChat";
+import Header from "./components/Header/Header";
+import {Routes, Route, Outlet, Link} from "react-router-dom"
+import HomePage from "./pages/Home/HomePage"
+import MainChat from "./pages/Chat/MainChat"
+import Discover from "./pages/Home/Discover"
+import Features from "./pages/Home/Features"
+import Safety from "./pages/Home/Safety"
+import NotFound from "./pages/Error/NotFound"
+import MainOutlet from "./pages/MainOutlet";
+import LoginPage from "./pages/Login/LoginPage";
+import Register from "./pages/Login/Register";
+const checkUserLoggedIn = () => {
+  const token = localStorage.getItem("username");
+  if (token) {
+    return true;
+  }
+  return false;
+};
 
 function App() {
+  const [isLoggedIn, setIsLoggedIn] = useState(checkUserLoggedIn());
+  const [username, setUsername] = useState("");
+
+  useEffect(() => {
+    
+  }
+  )
+
   return (
-    <div className="App w-auto h-fit ">
-      <div className="chat-app w-auto h-fit">
-        <div className="header flex flex-row justify-between my-8 mx-10 items-center mb-20">
-          <div className="logo w-60 font-sans font-bold text-3xl text-left pl-5">Chatbea</div>
-          <Profile />
-          
-        </div>
-        <MainChat />
+    <div className="App w-auto h-screen overflow-auto  ">
+      <div className="chat-app w-auto ">
+      <Routes>
+          <Route path="/" element={<MainOutlet/>} > 
+          {isLoggedIn ? <Route index element={<MainChat/>} /> : <Route index element={<HomePage/>} />}
+          <Route path="discover" element={<Discover/>} />
+          <Route path="features" element={<Features/>} />
+          <Route path="safety" element={<Safety/>} />
+          <Route path="login" element={<LoginPage/>} />
+          <Route path="register" element={<Register/>} />
+          <Route path="*" element={<NotFound/>} />
+          </Route>
+          </Routes>
       </div>
     </div>
   );
