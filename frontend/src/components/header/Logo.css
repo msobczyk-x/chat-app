@@ -1,0 +1,9 @@
+.logo {
+    font-size: 2.2rem;
+    
+    background-image: linear-gradient(to right, #1f2325, #f24b78, #d93654);
+    -webkit-background-clip: text;
+    -moz-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}

@@ -1,0 +1,13 @@
+.login,.register {
+    background-color: #d93654;
+    padding: 0.5rem 1rem;
+    border-radius: 5rem;
+    color: #ffffff;
+
+}
+
+.login:hover,   .register:hover {
+    background-color: hsl(174, 43%, 75%);
+    color: #1f2326;
+
+}

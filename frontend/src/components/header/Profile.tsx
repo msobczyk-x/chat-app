@@ -1,12 +1,16 @@
 import React from "react";
-
-
+import './Logo.css';
+import { NavLink } from "react-router-dom";
 const Profile = () => {
   const username = localStorage.getItem("username");
 
   return (
     <div className="Profile flex flex-row justify-between w-full ">
-      <div className="logo w-60 font-sans font-bold text-3xl text-left pl-5">Vibe</div>
+      <div className="w-60 font-sans font-bold text-3xl text-left pl-5 ">
+        <NavLink to="/" className="logo">
+          Vibe
+        </NavLink>
+      </div>
     <div className="profile-menu flex flex-row justify-center items-center w-60">
       <div className="notification p-4">
         <svg className="w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
@@ -18,7 +22,7 @@ const Profile = () => {
         <svg className=" w-3" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M224 256c70.7 0 128-57.3 128-128S294.7 0 224 0S96 57.3 96 128s57.3 128 128 128zm-45.7 48C79.8 304 0 383.8 0 482.3C0 498.7 13.3 512 29.7 512H418.3c16.4 0 29.7-13.3 29.7-29.7C448 383.8 368.2 304 269.7 304H178.3z"/></svg>
         </div>
         <div className="profile-name p-2">{username}</div>
-        <div className="logout bg-slate-800 p-2 rounded-lg text-slate-200 text-bold text-sm flex ml-10 transition ease-in-out hover:scale-110 delay-150 hover:bg-slate-600" onClick={() => {
+        <div className="logout bg-slate-800 p-2 rounded-lg text-slate-200 text-sm flex ml-10 transition ease-in-out hover:scale-110 delay-150 hover:bg-slate-600" onClick={() => {
           localStorage.removeItem("username");
           window.location.reload();
         }}>

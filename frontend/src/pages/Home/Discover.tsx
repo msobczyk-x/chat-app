@@ -1,7 +1,7 @@
 const Discover = () => {
     return (
-        <div>
-            <h1>Discover</h1>
+        <div className="w-full flex flex-col h-screen backdrop-blur items-center" >
+            <h1 className="text-4xl mt-16">Discover</h1>
         </div>
     )
 }

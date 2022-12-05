@@ -1,7 +1,7 @@
 const Features = () => {
     return (
-        <div>
-            <h1>Feature</h1>
+        <div className="w-full flex flex-col h-screen backdrop-blur items-center">
+            <h1 className="text-4xl mt-16">Features</h1>
         </div>
     )
 }

@@ -29,8 +29,7 @@ function App() {
   )
 
   return (
-    <div className="App w-auto h-screen overflow-auto  ">
-      <div className="chat-app w-auto ">
+    <div className="App ">
       <Routes>
           <Route path="/" element={<MainOutlet/>} > 
           {isLoggedIn ? <Route index element={<MainChat/>} /> : <Route index element={<HomePage/>} />}
@@ -42,7 +41,6 @@ function App() {
           <Route path="*" element={<NotFound/>} />
           </Route>
           </Routes>
-      </div>
     </div>
   );
 }

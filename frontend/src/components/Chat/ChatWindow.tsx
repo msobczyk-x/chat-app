@@ -70,20 +70,6 @@ const ChatWindow = () => {
               </div>
             );
           })}
-
-          {/* 
-          {strangerMessages.map((message, index) => {
-            return (
-              <div
-                className="message w-full flex flex-row justify-start"
-                key={index}
-              >
-                <div className="message-content bg-slate-300 rounded-md p-2 mt-2 text-slate-900">
-                  {message}
-                </div>
-              </div>
-            );
-          })} */}
         </div>
 
         <div className="message-input w-11/12 text-left rounded-full flex flex-row justify-between px-5 py-5">
