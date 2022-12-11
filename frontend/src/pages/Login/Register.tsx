@@ -2,11 +2,12 @@ import React, { useState } from "react";
 import axios from "axios";
 import { motion } from "framer-motion";
 import MessageBox from "../../components/MessageBox";
+import { useNavigate } from "react-router-dom";
 const LoginPage = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
-
+  const navigate = useNavigate();
   return (
     <div className="login-page w-full h-screen flex flex-col  items-center">
       <motion.div
@@ -26,7 +27,10 @@ const LoginPage = () => {
             console.log(res.data);
             localStorage.setItem("token", res.data.token);
             localStorage.setItem("username", res.data.username);
-            window.location.href = "/";
+            localStorage.setItem("newUser", res.data.newUser);
+            navigate("/setup");
+            
+            window.location.reload();
         }).catch((err) => {
             setErrorMessage(err.response.data.message);
         }) 

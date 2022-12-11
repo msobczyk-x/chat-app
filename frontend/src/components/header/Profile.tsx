@@ -1,9 +1,9 @@
 import React from "react";
 import './Logo.css';
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate, redirect } from "react-router-dom";
 const Profile = () => {
   const username = localStorage.getItem("username");
-
+  const navigate = useNavigate();
   return (
     <div className="Profile flex flex-row justify-between w-full ">
       <div className="w-60 font-sans font-bold text-3xl text-left pl-5 ">
@@ -23,7 +23,8 @@ const Profile = () => {
         </div>
         <div className="profile-name p-2">{username}</div>
         <div className="logout bg-slate-800 p-2 rounded-lg text-slate-200 text-sm flex ml-10 transition ease-in-out hover:scale-110 delay-150 hover:bg-slate-600" onClick={() => {
-          localStorage.removeItem("username");
+          localStorage.clear();
+          navigate("/");
           window.location.reload();
         }}>
           

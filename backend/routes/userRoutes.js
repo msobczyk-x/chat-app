@@ -6,14 +6,12 @@ const {
   home,
   logout,
 } = require("../controllers/userControllers");
-const sessionChecker = require("../utils/sessionChecker");
 
 const router = express.Router();
 
 router.route("/register").post(registerUser);
 router.route("/login").post(loginUser);
-router.route("/saveHobby").get(saveHobby);
-router.route("/", sessionChecker).get(home);
-router.route("/logout", sessionChecker).get(logout);
+router.route("/").get(home);
+router.route("/logout").get(logout);
 
 module.exports = router;

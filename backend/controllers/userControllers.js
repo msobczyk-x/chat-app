@@ -1,4 +1,5 @@
 const User = require("../models/userModel");
+const Chat = require("../models/chatModel");
 const generateToken = require("../utils/generateToken");
 
 const registerUser = async (req, res) => {
@@ -11,12 +12,10 @@ const registerUser = async (req, res) => {
       message: "User already exists",
     });
   } else {
-    hobby = [{ name: "a", checked: false }];
     const user = await User.create({
       username,
       password,
       newUser: true,
-      hobby: hobby,
     });
 
     if (user) {
@@ -56,24 +55,6 @@ const loginUser = async (req, res) => {
     });
   }
 };
-
-const saveHobby = async function (req, res) {
-  console.log(req.session);
-  if (req.session.authenticated) {
-    res.status(200).json({
-      message: req.session,
-    });
-  } else {
-    res.status(400).json({
-      message: "not LoggedIn",
-    });
-  }
-};
-
-const home = async function (req, res) {
-  console.log(req.session);
-};
-
 const logout = async function (req, res) {
   if (req.session.userid) {
     req.session.userid = null;
@@ -93,4 +74,65 @@ const logout = async function (req, res) {
     });
   });
 };
-module.exports = { registerUser, loginUser, saveHobby, home, logout };
+
+const saveHobby = async function (req, res) {
+  username = req.body.username;
+  hobby = req.body.hobby;
+  const foundUser = await User.findOne({ username: username });
+
+  if (foundUser) {
+    foundUser.hobby = hobby;
+
+    foundUser.save((err, updatedUser) => {
+      if (err) res.status(401).json({ message: error });
+      else {
+        res.status(200).json({ updatedUser });
+      }
+    });
+  } else {
+    res.status(401).json({
+      message: "no user found",
+    });
+  }
+};
+
+const getUserHobby = async function (req, res) {
+  const username = req.params.username;
+
+  const foundUser = await User.findOne({ username: username });
+
+  if (foundUser) {
+    res.status(200).json({
+      hobby: foundUser.hobby,
+    });
+  } else {
+    res.status(401).json({
+      message: "no user found",
+    });
+  }
+};
+
+const getUserChats = async function (req, res) {
+  const username = req.body.username;
+  const data = await Chat.find({ username: username });
+
+  roomMessages = data;
+  if (data) {
+    res.status(200).json({ roomMessages });
+  } else {
+    res.status(401).json({ message: "no user found" });
+  }
+};
+const home = async function (req, res) {
+  console.log(req.session);
+};
+
+module.exports = {
+  registerUser,
+  loginUser,
+  saveHobby,
+  home,
+  logout,
+  getUserHobby,
+  getUserChats,
+};

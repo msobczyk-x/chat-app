@@ -1,26 +1,33 @@
 const express = require("express");
-const http = require("http");
-const { Server } = require("socket.io");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const userRouters = require("./routes/userRoutes");
+const userResources = require("./routes/userResources");
 const { notFound, errorHandler } = require("./middlewares/errorMiddleware");
 const connectDB = require("./config/db.js");
-const cors = require("cors");
 const app = express();
+const Socket = require("./models/socketModel");
+const ChatRoom = require("./models/chatModel");
+const saveMessagesToDB = require("./utils/serverControlles");
+const cookie = require("cookie");
+const cors = require("cors");
+const http = require("http");
 const server = http.createServer(app);
-const io = new Server(server);
+const io = require("socket.io")(server);
+app.use(cors());
 
-// app.use(
-//   session({
-//     secret: "secret",
-//     resave: false,
-//     saveUninitialized: false,
-//   })
-// );
-// app.use(passport.initialize());
-// app.use(passport.session());
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Credentials", "true");
+  next();
+});
+app.options("*", function (req, res) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.send();
+});
+
 
 
 connectDB();
@@ -36,144 +43,115 @@ app.use(sessionMiddleware);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/static", express.static("./static/"));
-app.use(cors());
 app.use("/api/auth", userRouters);
+app.use("/api", userResources);
 app.use(notFound);
 app.use(errorHandler);
 app.use(cookieParser());
 
-
-
-// const mongoDB = "mongodb://127.0.0.1:27017/UserDB";
-// mongoose.connect(mongoDB, { useNewUrlParser: true, useUnifiedTopology: true });
-// const db = mongoose.connection;
-// db.on("error", console.error.bind(console, "MongoDB connection error:"));
-
-// const Schema = mongoose.Schema;
-
-// const userSchema = new Schema({
-//   username: String,
-//   password: String,
-// });
-// userSchema.plugin(passportLocalMongoose);
-// const User = mongoose.model("UserModel", userSchema);
-
-// passport.use(User.createStrategy());
-// passport.serializeUser(User.serializeUser());
-// passport.deserializeUser(User.deserializeUser());
-
-// app.use((req, res, next) => {
-//   res.header("Access-Control-Allow-Origin", "*");
-//   next();
-// });
-
-// app.get("/", (req, res) => {
-//   res.sendFile(__dirname + "/index.html");
-// });
-
-// app.post("/", (req, res) => {
-//   console.log(req.body);
-// });
-
-// app.post("/login", (req, res) => {
-//   const username = req.body.email;
-//   const password = req.body.password;
-//   console.log(username, password);
-
-//   const user = new User({
-//     username: username,
-//     password: password,
-//   });
-//   req.login(user, (err) => {
-//     if (err) console.log(err);
-//     else {
-//       passport.authenticate("local")(req, res, () => {
-//         console.log("succes");
-//         res.redirect("/");
-//       });
-//     }
-//   });
-//   // User.find({ email: email }, (err, foundUser) => {
-//   //   if (!err) {
-//   //     if (foundUser.length > 0) {
-//   //       console.log(foundUser);
-//   //       if (foundUser[0].password != password) {
-//   //         console.log("wrong password");
-//   //       } else {
-//   //         console.log("user in db");
-//   //       }
-//   //     } else if (foundUser.length == 0) {
-//   //       console.log("no user in db");
-//   //     }
-//   //   }
-//   // });
-// });
-
-// app.post("/register", (req, res) => {
-//   username = req.body.email;
-//   password = req.body.password;
-//   console.log(username, password);
-
-//   User.register({ username: username }, password, (err, user) => {
-//     if (err) {
-//       console.log(err);
-//       res.redirect("/register");
-//     } else {
-//       passport.authenticate("local")(req, res, () => {
-//         console.log("succes");
-//         res.redirect("/login");
-//       });
-//     }
-//   });
-
-// User.find({ email: email }, (err, foundUser) => {
-//   if (!err) {
-//     if (foundUser.length != 0) {
-//       console.log("user already in db");
-//     } else {
-//       const user = new User({
-//         email: email,
-//         password: password,
-//       });
-//       user.save();
-//     }
-//   }
-// });
-// });
-
-const wrap = (middleware) => (socket, next) =>
-  middleware(socket.request, {}, next);
-
-io.use(wrap(sessionMiddleware));
-
-io.use((socket, next) => {
-  const session = socket.request.session;
-  if (session && session.authenticated) {
-    next();
-  } else {
-    next(new Error("unauthorized"));
-  }
-});
+let hobby = [];
+let users = [];
+let room = "";
+let messages = {};
+let usernames = {};
 
 io.on("connection", (socket) => {
+  console.log("a user connected");
   let username = "";
-  let room = "";
+  socket.emit("connected");
 
-  socket.on("chat message", (message) => {
-    // if (room === "") socket.broadcast.emit("chat message", msg, username);
-    socket.broadcast.emit("chat message", username, message);
+  // console.log(socket.handshake.headers.cookie);
+  console.log(socket.handshake.headers.cookie);
+  if (Object.values(usernames).includes(username)) {
+    console.log("asd");
+  }
+
+  users.push({ socket: socket, status: 0 });
+  hobby.push({ id: socket.id, hobby: ["asd"] });
+  console.log(users);
+
+  let freeUserLen = users.filter(
+    (obj) => obj.hasOwnProperty("status") && obj.status === 0
+  ).length;
+  if (freeUserLen >= 2) {
+    socket.emit("connection");
+  }
+
+  socket.on("sendHobby", (hobby) => {
+    hobby.push({
+      id: socket.id,
+      hobby: hobby,
+    });
   });
+
+  socket.on("findMatch", () => {
+    const userHobby = hobby.find((hobby) => hobby.id === socket.id);
+    if (!userHobby) return;
+    hobby = hobby.filter((hobby) => hobby.id !== socket.id);
+
+    const bestMatch = hobby
+      .map((res) => ({
+        res,
+        matches: res.hobby.reduce(
+          (acc, cur) => acc + (userHobby.hobby.includes(cur) ? 1 : 0),
+          0
+        ),
+      }))
+      .reduce((acc, cur) => (acc.matches > cur.matches ? acc : cur));
+
+    if (bestMatch.res.id !== socket.id) {
+      socket.emit("match", `${bestMatch.res.id} ${socket.id}`);
+      io.to(bestMatch.res.id).emit("match", `${bestMatch.res.id} ${socket.id}`);
+
+      users = users.map((obj) => {
+        if (obj.socket.id === socket.id || obj.socket.id === bestMatch.res.id) {
+          return {
+            ...obj,
+            status: 1,
+          };
+        }
+      });
+    }
+  });
+
   socket.on("register username", (newUsername) => {
     username = newUsername;
+    usernames[socket.id] = newUsername;
   });
+
+  socket.on("chat message", (message, username) => {
+    if (messages[room]) {
+      messages[room].push({
+        username: username,
+        message: message,
+        date: new Date(),
+      });
+    } else {
+      messages[room] = [
+        {
+          username: username,
+          message: message,
+          date: new Date(),
+        },
+      ];
+    }
+    socket.to(room).emit("chat message", username, message);
+  });
+
   socket.on("join room", (newRoom, sendMessage) => {
-    console.log("asd");
-    socket.join(room);
+    socket.join(newRoom);
     room = newRoom;
-    sendMessage(`Joined room:'${room}'`); 
+    sendMessage(`Joined room:'${room}'`);
+  });
+
+  socket.on("disconnect", function () {
+    console.log("user disconnected");
+    socket.to(room).emit("user disconnected");
+    saveMessagesToDB(usernames[socket.id], messages[room],room);
+    hobby = hobby.filter((hobby) => hobby.id !== socket.id);
+    users = users.filter((user) => user.socket.id != socket.id);
   });
 });
-
 server.listen(3000, () => {
   console.log("listening on *:3000");
 });
