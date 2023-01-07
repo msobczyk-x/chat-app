@@ -11,7 +11,7 @@ const Header = () => {
     if (token) {
       setIsLoggedIn(true);
     }
-  });
+  }),[];
 
   return (
     <div className="header flex mt-10 mx-10 ">
