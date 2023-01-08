@@ -2,13 +2,13 @@
 
 ##TODO:
 Maciek:
-- responsive design na całej aplikacji, okienko czatu poprawić input, button
-- wszystkie strony z menu pouzupełniać
+- ✅responsive design na całej aplikacji, okienko czatu poprawić input, button
+- ✅wszystkie strony z menu pouzupełniać (na razie git)
 - ✅socket łączył się tylko w MainChat, a nie na starcie (zrobione, lazy loading)
 - logowanie newUser, hobby 
 - pobrać z bazy danych hobby po logowaniu i socket.emit do tego
 - waiting room albo coś innego lub minigierka
-- rejestracja: rok urodzenia, hasło walidacja, email
+- ✅rejestracja: rok urodzenia, hasło walidacja, email
 - ✅messagebox error, ładniejszy zrobić
 - avatary do wyboru
 - profil zmiana hobby
