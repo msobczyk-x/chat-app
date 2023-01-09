@@ -3,33 +3,40 @@ const Chat = require("../models/chatModel");
 const generateToken = require("../utils/generateToken");
 
 const registerUser = async (req, res) => {
-  const { username, password } = req.body;
+  const { username, email, password, dateOfBirth } = req.body;
 
   const userExists = await User.findOne({ username });
 
   if (userExists) {
     res.status(400).json({
-      message: "User already exists",
+      message: ["User already exists"],
     });
   } else {
-    const user = await User.create({
-      username,
-      password,
-      newUser: true,
-    });
-
-    if (user) {
-      res.status(201).json({
-        _id: user._id,
-        username: user.username,
-        token: generateToken(user._id),
-        newUser: user.newUser,
-        hobby: user.hobby,
+    try {
+      const user = await User.create({
+        username,
+        email,
+        password,
+        dateOfBirth,
+        newUser: true,
       });
-    } else {
-      res.status(400).json({
-        message: "Error",
-      });
+      await user.validate();
+      if (user) {
+        res.status(201).json(user);
+      } else {
+        res.status(400).json({
+          message: "Error",
+        });
+      }
+    } catch (error) {
+      err = error.errors;
+      const entries = Object.entries(err);
+      const messages = [];
+      entries.forEach(([key, value]) =>
+        messages.push(value.properties.message)
+      );
+      res.status(400).json({ message: messages });
+      return;
     }
   }
 };
@@ -42,13 +49,7 @@ const loginUser = async (req, res) => {
     session.userid = user.id;
 
     console.log(req.session);
-    res.json({
-      _id: user._id,
-      username: user.username,
-      token: generateToken(user._id),
-      newUser: user.newUser,
-      hobby: user.hobby,
-    });
+    res.json(user);
   } else {
     res.status(400).json({
       message: "Wrong username or password",
@@ -82,6 +83,7 @@ const saveHobby = async function (req, res) {
 
   if (foundUser) {
     foundUser.hobby = hobby;
+    foundUser.newUser = false;
 
     foundUser.save((err, updatedUser) => {
       if (err) res.status(401).json({ message: error });
@@ -96,6 +98,19 @@ const saveHobby = async function (req, res) {
   }
 };
 
+const updateUser = async function (req, res) {
+  const username = req.params.username;
+  const updates = req.body;
+
+  User.updateOne({ username: username }, updates, (err, user) => {
+    if (err) {
+      res.status(400).json({ err });
+    } else {
+      res.status(200).json({ message: "success" });
+    }
+  });
+};
+
 const getUserHobby = async function (req, res) {
   const username = req.params.username;
 
@@ -106,9 +121,18 @@ const getUserHobby = async function (req, res) {
       hobby: foundUser.hobby,
     });
   } else {
-    res.status(401).json({
+    res.status(400).json({
       message: "no user found",
     });
+  }
+};
+const getUser = async function (req, res) {
+  const username = req.params.username;
+  const user = await User.findOne({ username });
+  if (user) {
+    res.status(200).json(user);
+  } else {
+    res.status(400).json({ message: "no user found" });
   }
 };
 
@@ -120,7 +144,7 @@ const getUserChats = async function (req, res) {
   if (data) {
     res.status(200).json({ roomMessages });
   } else {
-    res.status(401).json({ message: "no user found" });
+    res.status(400).json({ message: "no user found" });
   }
 };
 const home = async function (req, res) {
@@ -135,4 +159,6 @@ module.exports = {
   logout,
   getUserHobby,
   getUserChats,
+  updateUser,
+  getUser,
 };
