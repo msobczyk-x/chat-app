@@ -4,20 +4,14 @@
 Maciek:
 - ✅responsive design na całej aplikacji, okienko czatu poprawić input, button
 - ✅wszystkie strony z menu pouzupełniać (na razie git)
-- ✅socket łączył się tylko w MainChat, a nie na starcie (zrobione, lazy loading)
 - logowanie newUser, hobby 
 - pobrać z bazy danych hobby po logowaniu i socket.emit do tego
 - waiting room albo coś innego lub minigierka
-- ✅rejestracja: rok urodzenia, hasło walidacja, email
-- ✅messagebox error, ładniejszy zrobić
 - avatary do wyboru
 - profil zmiana hobby
 - profil zmiana email, hasło, rok urodzenia
-- ✅usunąć notification
 - my chats
-- ✅nie wysyłać pustych wiadomości
-- ✅logout przycisk zmienić na button
-- ✅wysyłanie wiadomości na czacie przez enter na klawiaturze
+
 
 Radek:
 - ✅łączyło przynajmniej jak są jedno wspólne zainteresowanie
@@ -30,7 +24,6 @@ Radek:
 
 
 Razem:
-- ✅nie łączyć się z "duchem"
 - przycisk do akceptowania pary (przemyśleć sposób w jaki)
 - do rejestracji dodać email, powtórz hasło, rok urodzenia
 
@@ -38,8 +31,15 @@ Razem:
 Może kiedyś:
 notifiaction
 
-
-
+Zrobione:
+- ✅nie łączyć się z "duchem"
+- ✅socket łączył się tylko w MainChat, a nie na starcie (zrobione, lazy loading)
+- ✅usunąć notification
+- ✅nie wysyłać pustych wiadomości
+- ✅logout przycisk zmienić na button
+- ✅wysyłanie wiadomości na czacie przez enter na klawiaturze
+- ✅rejestracja: rok urodzenia, hasło walidacja, email
+- ✅messagebox error, ładniejszy zrobić
 - ✅Logowanie / rejestracja frontend (zrobione)
 - ✅logowanie / rejestracja backend (zrobione)
 - ✅baza danych (zrobione)
