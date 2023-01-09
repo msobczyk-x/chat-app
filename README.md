@@ -2,14 +2,8 @@
 
 ##TODO:
 Maciek:
-- ✅responsive design na całej aplikacji, okienko czatu poprawić input, button
-- ✅wszystkie strony z menu pouzupełniać (na razie git)
-- logowanie newUser, hobby 
-- pobrać z bazy danych hobby po logowaniu i socket.emit do tego
-- waiting room albo coś innego lub minigierka
-- avatary do wyboru
-- profil zmiana hobby
-- profil zmiana email, hasło, rok urodzenia
+
+- profil zmiana hobby, email, hasło, avatary do wyboru
 - my chats
 
 
@@ -29,9 +23,14 @@ Razem:
 
 
 Może kiedyś:
-notifiaction
+- notifiaction
+- waiting room albo coś innego lub minigierka
 
 Zrobione:
+- ✅logowanie newUser, hobby 
+- ✅pobrać z bazy danych hobby po logowaniu i socket.emit do tego
+- ✅wszystkie strony z menu pouzupełniać (na razie git)
+- ✅responsive design na całej aplikacji, okienko czatu poprawić input, button
 - ✅nie łączyć się z "duchem"
 - ✅socket łączył się tylko w MainChat, a nie na starcie (zrobione, lazy loading)
 - ✅usunąć notification
