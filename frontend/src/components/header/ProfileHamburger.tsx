@@ -1,11 +1,25 @@
 import { useEffect, useState, useRef } from "react";
-import { NavLink } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { UserOutlined } from '@ant-design/icons';
+import { Avatar } from 'antd';
 import "./Logo.css";
 import "./Menu.css";
 
-const Menu = () => {
+const ProfileHamburger = () => {
+  
+
+  const username = localStorage.getItem("username");
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    localStorage.clear();
+    navigate("/");
+    window.location.reload();
+  };
   const [navbar, setNavbar] = useState(false);
+  
+  
+  
   return (
     <div className="flex flex-row justify-between w-full">
       <nav className="w-full bg-white">
@@ -64,6 +78,12 @@ const Menu = () => {
 
             >
               <ul className="items-center justify-center space-y-8 md:flex md:space-x-6 md:space-y-0">
+                <li className="flex items-center">
+                <Avatar size="large" icon={<UserOutlined />} />
+                <p className="text-lg font-bold font-sans ml-2">{username}</p>
+
+
+                </li>
                 <li className="menu-item safety text-lg font-bold font-sans  ">
                   <NavLink
                     to="/"
@@ -71,41 +91,21 @@ const Menu = () => {
                       isActive ? "border-b-2 border-red-500" : "null"
                     }
                   >
-                    Home
+                    Chats
                   </NavLink>
                 </li>
                 <li className="menu-item safety text-lg font-bold font-sans  ">
                   <NavLink
-                    to="/discover"
+                    to="/profile"
                     className={({ isActive }) =>
                       isActive ? "border-b-2 border-red-500" : "null"
                     }
                   >
-                    Discover
+                    Profile
                   </NavLink>
                 </li>
-                <li className="menu-item safety text-lg font-bold font-sans  ">
-                  <NavLink
-                    to="/features"
-                    className={({ isActive }) =>
-                      isActive ? "border-b-2 border-red-500" : "null"
-                    }
-                  >
-                    Features
-                  </NavLink>
-                </li>
-                <li className="menu-item safety text-lg font-bold font-sans  ">
-                  <NavLink
-                    to="/safety"
-                    className={({ isActive }) =>
-                      isActive ? "border-b-2 border-red-500" : "null"
-                    }
-                  >
-                    Safety
-                  </NavLink>
-                </li>
-                <li className="login menu-item text-lg text-center font-bold font-sans transition ease-in-out hover:-translate-y-1 hover:scale-105 delay-150">
-                  <NavLink to="/login">Log in</NavLink>
+                <li className="login menu-item text-lg text-center font-bold font-sans transition ease-in-out hover:-translate-y-1 hover:scale-105 delay-150 bg-slate-800">
+                <NavLink to="/" onClick={handleLogout} className="flex flex-row"><svg className="w-5 fill-slate-200" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M160 96c17.7 0 32-14.3 32-32s-14.3-32-32-32H96C43 32 0 75 0 128V384c0 53 43 96 96 96h64c17.7 0 32-14.3 32-32s-14.3-32-32-32H96c-17.7 0-32-14.3-32-32l0-256c0-17.7 14.3-32 32-32h64zM504.5 273.4c4.8-4.5 7.5-10.8 7.5-17.4s-2.7-12.9-7.5-17.4l-144-136c-7-6.6-17.2-8.4-26-4.6s-14.5 12.5-14.5 22v72H192c-17.7 0-32 14.3-32 32l0 64c0 17.7 14.3 32 32 32H320v72c0 9.6 5.7 18.2 14.5 22s19 2 26-4.6l144-136z"/></svg>Logout</NavLink>
                 </li>
               </ul>
             </motion.div>
@@ -116,4 +116,4 @@ const Menu = () => {
   );
 };
 
-export default Menu;
+export default ProfileHamburger;

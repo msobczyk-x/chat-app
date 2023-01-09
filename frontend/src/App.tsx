@@ -1,6 +1,6 @@
 import React, { useState, useEffect, lazy } from "react";
 import "./App.css";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
 import HomePage from "./pages/Home/HomePage";
 import Discover from "./pages/Home/Discover";
 import Features from "./pages/Home/Features";
@@ -10,6 +10,7 @@ import MainOutlet from "./pages/MainOutlet";
 import LoginPage from "./pages/Login/LoginPage";
 import Register from "./pages/Login/Register";
 import FirstSetup from "./pages/FirstSetup/FirstSetup";
+
 const checkUserLoggedIn = () => {
   const token = localStorage.getItem("username");
   if (token) {
@@ -37,7 +38,9 @@ function App() {
   }, [isLoggedIn, isNewUser]);
 
   return (
+    
     <div className="App ">
+      
       <Routes>
         <Route path="/" element={<MainOutlet />}>
           <Route
@@ -59,11 +62,13 @@ function App() {
           <Route path="safety" element={<Safety />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="register" element={<Register />} />
-          <Route path="setup" element={<FirstSetup />} />
+          <Route path="setup" element={ isLoggedIn ? <FirstSetup /> : <Navigate to="/" replace/>}  />
           <Route path="*" element={<NotFound />} />
         </Route>
       </Routes>
+      
     </div>
+   
   );
 }
 
