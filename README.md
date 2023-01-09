@@ -20,17 +20,17 @@ Maciek:
 - ✅wysyłanie wiadomości na czacie przez enter na klawiaturze
 
 Radek:
-- łączyło przynajmniej jak są jedno wspólne zainteresowanie
-- timeout, po 15 sekundach bez pary znajduje losową osobę
-- cors
-- walidacja username email przy rejestracji
-- api zmiana hobby
-- api zmiana email, hasło, rok urodzenia
-- mychats
+- ✅łączyło przynajmniej jak są jedno wspólne zainteresowanie
+- timeout, po 15 sekundach bez pary znajduje losową osobę (nie wiem czy to ma sens bo połączy sie z użytkownikiem który nie czeka jeszcze 15 sec a dostanie kogoś bez hobby)
+- ✅cors 
+- ✅walidacja username email przy rejestracji
+- ✅api zmiana hobby
+- ✅api zmiana email, hasło, rok urodzenia
+- ✅?mychats
 
 
 Razem:
-- ✅(chyba zrobione)nie łączyć się z "duchem"
+- ✅nie łączyć się z "duchem"
 - przycisk do akceptowania pary (przemyśleć sposób w jaki)
 - do rejestracji dodać email, powtórz hasło, rok urodzenia
 
