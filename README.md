@@ -5,7 +5,7 @@ Maciek:
 
 - profil zmiana hobby, email, hasło, avatary do wyboru
 - my chats
-
+- przycisk do dodania pary
 
 Radek:
 - ✅łączyło przynajmniej jak są jedno wspólne zainteresowanie
