@@ -3,7 +3,7 @@
 ##TODO:
 Maciek:
 
-- profil zmiana hobby, email, hasło, avatary do wyboru
+
 - my chats
 - przycisk do dodania pary
 
@@ -27,6 +27,7 @@ Może kiedyś:
 - waiting room albo coś innego lub minigierka
 
 Zrobione:
+- ✅profil zmiana hobby, email, hasło, avatary do wyboru
 - ✅logowanie newUser, hobby 
 - ✅pobrać z bazy danych hobby po logowaniu i socket.emit do tego
 - ✅wszystkie strony z menu pouzupełniać (na razie git)
