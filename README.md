@@ -15,6 +15,8 @@ Radek:
 - ✅api zmiana hobby
 - ✅api zmiana email, hasło, rok urodzenia
 - ✅?mychats
+- avatar1/avatar2/avatar3/avatar4 do zapisywania w bazie danych w polu avatar, nie potrzebne przy rejestrowaniu, dopiero przy wyborze z profilu
+- mychats pobieranie listy osób, dopiero po kliknięciu pobiera całą rozmowę z daną osobą
 
 
 Razem:
