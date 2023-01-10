@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useRef } from "react";
 
 import { SocketContext } from "../../context/socket";
 
@@ -8,6 +8,7 @@ type Message = {
 };
 
 const ChatWindow = () => {
+  const messageEl = useRef<HTMLDivElement>(null);
   const socket = useContext(SocketContext);
   const username = localStorage.getItem("username");
   const [userMessages, setUserMessages] = useState<Message[]>([]);
@@ -31,7 +32,14 @@ const ChatWindow = () => {
     createMessage(messageValue, username);
     setMessageValue("");
   };
-
+  useEffect(() => {
+    if (messageEl.current) {
+      messageEl.current.addEventListener('DOMNodeInserted', (event: Event) => {
+        const target = event.currentTarget as HTMLDivElement;
+        target.scroll({ top: target.scrollHeight, behavior: 'smooth' });
+      });
+    }
+  }, []);
   useEffect(() => {
     socket.on("chat message", (username, message) => {
       createMessage(message, username);
@@ -43,24 +51,24 @@ const ChatWindow = () => {
   }, [userMessages]);
 
   return (
-    <div className="ChatWindow w-8/12 h-full rounded backdrop-blur bg-slate-200">
+    <div className="ChatWindow w-full h-full rounded backdrop-blur bg-slate-200">
       <div className="title font-sans font-bold text-2xl text-left pl-5 pt-5 ">
         Chat
       </div>
-      <div className="chat-window flex flex-col items-center w-full h-[calc(100vh_-_27vh)] justify-end">
-        <div className="chat-messages flex flex-col justify-end p-4 w-full">
+      <div className="chat-window flex flex-col items-center w-full h-full">
+        <div ref={messageEl} className="chat-messages flex flex-col w-full h-full overflow-y-auto my-5">
           {userMessages.map((message, index) => {
             return (
               <div className="" key={index}>
                 {message.username === username ? (
                   <div className="message w-full flex flex-row justify-end">
-                    <div className="message-content bg-blue-300 rounded-md p-2 mt-2 text-slate-900">
+                    <div className="message-content bg-blue-300 rounded-md p-2 my-2 mx-4 text-slate-900">
                       {message.message}
                     </div>
                   </div>
                 ) : (
                   <div className="message w-full flex flex-row justify-start">
-                    <div className="message-content bg-slate-300 rounded-md p-2 mt-2 text-slate-900">
+                    <div className="message-content bg-slate-300 rounded-md p-2 my-2 mx-4 text-slate-900">
                       {message.message}
                     </div>
                   </div>
@@ -70,7 +78,7 @@ const ChatWindow = () => {
           })}
         </div>
 
-        <div className="message-input w-11/12 text-left rounded-full flex flex-row justify-between px-5 py-5">
+        <div className="message-input w-11/12 text-left rounded-full flex flex-row justify-between px-5 pb-16">
           <form
             onSubmit={sendMessage}
             className="message-wrapper-input flex flex-row justify-between items-center w-full h-10"

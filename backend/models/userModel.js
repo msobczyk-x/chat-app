@@ -7,11 +7,27 @@ const userSchema = new Schema(
   {
     username: {
       type: String,
-      required: true,
+      required: [true, "Please enter username"],
+      unique: true,
+    },
+    email: {
+      type: String,
+      required: [false, "Please enter email address"],
+      unique: true,
+      match: [
+        /^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,3})+$/,
+        "Please enter a valid email address",
+      ],
     },
     password: {
       type: String,
-      required: true,
+      required: [true, "Please enter password"],
+    },
+    dateOfBirth: {
+      type: Date,
+      required: [false, "Please enter date of birth"],
+      min: "1900-01-01",
+      max: "2022-12-31",
     },
     newUser: {
       type: Boolean,

@@ -54,6 +54,8 @@ const LoginPage = () => {
     axios.post("http://localhost:3000/api/auth/register", {
             username: username,
             password: password,
+            email: email,
+            dateOfBirth: `${year}-${month}-${day}`,
         }).then((res) => {
             console.log(res.data);
             localStorage.setItem("token", res.data.token);

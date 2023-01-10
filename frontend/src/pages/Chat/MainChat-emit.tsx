@@ -58,12 +58,14 @@ const MainChat = () => {
       sc.off("register username");
     };
   }, []);
+  
   return (
     <div>
       <SocketContext.Provider value={sc}>
         {isConnected ? (
-          <div className="MainChat w-full flex flex-col justify-between h-[calc(100vh_-_8rem)] py-5 items-center rounded md:flex-row">
+          <div className="MainChat w-full flex flex-row justify-between h-[calc(100vh_-_10vh)] p-10 items-center rounded">
             <MyChats />
+
             <ChatWindow />
           </div>
         ) : (
