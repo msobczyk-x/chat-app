@@ -1,19 +1,14 @@
 # chat-app
 
 ##TODO:
+
 Maciek:
-
-
 - my chats
 - przycisk do dodania pary
 
 Radek:
-- ✅łączyło przynajmniej jak są jedno wspólne zainteresowanie
+
 - timeout, po 15 sekundach bez pary znajduje losową osobę (nie wiem czy to ma sens bo połączy sie z użytkownikiem który nie czeka jeszcze 15 sec a dostanie kogoś bez hobby)
-- ✅cors 
-- ✅walidacja username email przy rejestracji
-- ✅api zmiana hobby
-- ✅api zmiana email, hasło, rok urodzenia
 - ✅?mychats
 - avatar1/avatar2/avatar3/avatar4 do zapisywania w bazie danych w polu avatar, nie potrzebne przy rejestrowaniu, dopiero przy wyborze z profilu
 - mychats pobieranie listy osób, dopiero po kliknięciu pobiera całą rozmowę z daną osobą
@@ -29,6 +24,11 @@ Może kiedyś:
 - waiting room albo coś innego lub minigierka
 
 Zrobione:
+- ✅łączyło przynajmniej jak są jedno wspólne zainteresowanie
+- ✅cors 
+- ✅walidacja username email przy rejestracji
+- ✅api zmiana hobby
+- ✅api zmiana email, hasło, rok urodzenia
 - ✅profil zmiana hobby, email, hasło, avatary do wyboru
 - ✅logowanie newUser, hobby 
 - ✅pobrać z bazy danych hobby po logowaniu i socket.emit do tego
