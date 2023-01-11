@@ -3,6 +3,7 @@
 ##TODO:
 
 Maciek:
+- rozlacz z chatu po wyjsciu
 - my chats
 - przycisk do dodania pary
 
@@ -12,6 +13,7 @@ Radek:
 - ✅?mychats
 - avatar1/avatar2/avatar3/avatar4 do zapisywania w bazie danych w polu avatar, nie potrzebne przy rejestrowaniu, dopiero przy wyborze z profilu
 - mychats pobieranie listy osób, dopiero po kliknięciu pobiera całą rozmowę z daną osobą
+- status pending, accepted, notaccepted
 
 
 Razem:
