@@ -4,10 +4,12 @@ import ChatWindow from "../../components/Chat/ChatWindow";
 import { SocketContext, sc } from "../../context/socket";
 import Spinner from "../../components/Spinner/Spinner";
 import axios from "axios";
+import { useForceUpdate } from "@chakra-ui/react";
 const MainChat = () => {
   const username = localStorage.getItem("username");
   let newRoom: string;
   const [isConnected, setIsConnected] = useState(false);
+  
   useEffect(() => {
     sc.on("connection", () => {
 
@@ -38,14 +40,16 @@ const MainChat = () => {
       console.log(room);
       newRoom = room;
       setIsConnected(true);
+      
       sc.emit("join room", newRoom, (response: string) => {
         console.log(response);
       });
 
 
       sc.on("user disconnected", () => {
-        console.log("user disconected");
+ 
       });
+
     });
     return () => {
       sc.off("match");
@@ -58,6 +62,8 @@ const MainChat = () => {
       sc.off("register username");
     };
   }, []);
+
+
   return (
     <div>
       <SocketContext.Provider value={sc}>

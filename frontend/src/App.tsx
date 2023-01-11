@@ -41,6 +41,7 @@ function App() {
   async function fetchData() {
     const response = await axios.get(`http://localhost:3000/api/getUser/${username}`);
     setHasHobby(response.data.hobby);
+    localStorage.setItem("avatar", response.data.avatar);
   }
   useEffect(() => {
     if (isLoggedIn){

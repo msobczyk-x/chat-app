@@ -2,8 +2,14 @@ const mongoose = require("mongoose");
 
 const chatRoomSchema = new mongoose.Schema({
   username: String,
-  roomMessages: [{ roomId: String, messages: [] }],
+  roomMessages: [{ pair: String, messages: [] }],
 });
 const ChatRoom = mongoose.model("ChatRoom", chatRoomSchema);
 
-module.exports = ChatRoom;
+const userPairsSchema = new mongoose.Schema({
+  username: String,
+  pairs: [],
+});
+const userPairs = mongoose.model("UserPairs", userPairsSchema);
+
+module.exports = { ChatRoom, userPairs };

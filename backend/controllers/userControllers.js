@@ -1,5 +1,5 @@
 const User = require("../models/userModel");
-const Chat = require("../models/chatModel");
+const { ChatRoom, userPairs } = require("../models/chatModel");
 const generateToken = require("../utils/generateToken");
 
 const registerUser = async (req, res) => {
@@ -19,6 +19,7 @@ const registerUser = async (req, res) => {
         password,
         dateOfBirth,
         newUser: true,
+        avatar: "avatar",
       });
       await user.validate();
       if (user) {
@@ -106,7 +107,7 @@ const updateUser = async function (req, res) {
     if (err) {
       res.status(400).json({ err });
     } else {
-      res.status(200).json({ message: "Changed succesfully !" });
+      res.status(200).json({ message: "success" });
     }
   });
 };
@@ -138,7 +139,7 @@ const getUser = async function (req, res) {
 
 const getUserChats = async function (req, res) {
   const username = req.body.username;
-  const data = await Chat.find({ username: username });
+  const data = await ChatRoom.find({ username: username });
 
   roomMessages = data;
   if (data) {
@@ -147,6 +148,16 @@ const getUserChats = async function (req, res) {
     res.status(400).json({ message: "no user found" });
   }
 };
+const getUserPairs = async (req, res) => {
+  const username = req.params.username;
+  const data = await userPairs.find({ username: username });
+  if (data) {
+    res.status(200).json({ data });
+  } else {
+    res.status(400).json({ message: "no user found" });
+  }
+};
+
 const home = async function (req, res) {
   console.log(req.session);
 };
@@ -161,4 +172,5 @@ module.exports = {
   getUserChats,
   updateUser,
   getUser,
+  getUserPairs,
 };

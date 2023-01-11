@@ -46,6 +46,11 @@ const FirstSetup = () => {
       setErrorMessage("Please select atleast one hobby");
       return;
     }
+    else if (interest.length >10) {
+      setErrorMessage("Please select atmost 10 hobbies");
+      return;
+    }
+    
     e.preventDefault();
     axios
       .post("http://localhost:3000/api/saveHobby", {
@@ -59,6 +64,7 @@ const FirstSetup = () => {
       .catch((err) => {
         setErrorMessage(err.response.data.message);
       });
+      
   };
   
     

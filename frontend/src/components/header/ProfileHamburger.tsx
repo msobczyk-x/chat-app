@@ -5,11 +5,13 @@ import { UserOutlined } from '@ant-design/icons';
 import { Avatar } from 'antd';
 import "./Logo.css";
 import "./Menu.css";
+import { Avatars } from "./Avatars";
 
 const ProfileHamburger = () => {
   
 
   const username = localStorage.getItem("username");
+  const avatar = localStorage.getItem("avatar");
   const navigate = useNavigate();
   const handleLogout = () => {
     localStorage.clear();
@@ -79,7 +81,7 @@ const ProfileHamburger = () => {
             >
               <ul className="items-center justify-center space-y-8 md:flex md:space-x-6 md:space-y-0">
                 <li className="flex items-center">
-                <Avatar size="large" icon={<UserOutlined />} />
+                <Avatars src={avatar}/>
                 <p className="text-lg font-bold font-sans ml-2">{username}</p>
 
 
@@ -90,8 +92,14 @@ const ProfileHamburger = () => {
                     className={({ isActive }) =>
                       isActive ? "border-b-2 border-red-500" : "null"
                     }
+                    onClick={
+                      () => {
+                        window.location.reload();
+
+                    }
+                  }
                   >
-                    Chats
+                    Chat
                   </NavLink>
                 </li>
                 <li className="menu-item safety text-lg font-bold font-sans  ">

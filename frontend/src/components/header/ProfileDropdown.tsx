@@ -2,6 +2,7 @@ import { DownOutlined, UserOutlined } from "@ant-design/icons";
 import type { MenuProps } from "antd";
 import { Dropdown, Space, Avatar } from "antd";
 import { NavLink, useNavigate } from "react-router-dom";
+import { Avatars } from "./Avatars";
 
 const ProfileDropdown = (props: any) => {
   const navigate = useNavigate();
@@ -10,7 +11,7 @@ const ProfileDropdown = (props: any) => {
     navigate("/");
     window.location.reload();
   };
-  const { username } = props;
+  const { username, avatar } = props;
   const items: MenuProps["items"] = [
     {
       label: (
@@ -19,6 +20,7 @@ const ProfileDropdown = (props: any) => {
           className={({ isActive }) =>
             isActive ? "border-b-2 border-red-500" : "null"
           }
+          
         >
           Profile
         </NavLink>
@@ -32,6 +34,9 @@ const ProfileDropdown = (props: any) => {
           className={({ isActive }) =>
             isActive ? "border-b-2 border-red-500" : "null"
           }
+          onClick={() => {
+            window.location.reload();
+          }}
         >
           Chat
         </NavLink>
@@ -68,7 +73,7 @@ const ProfileDropdown = (props: any) => {
       <Dropdown menu={{ items }} trigger={["click"]}>
         <a onClick={(e) => e.preventDefault()}>
           <Space>
-            <Avatar size="large" icon={<UserOutlined />} />{" "}
+          <Avatars src={avatar}/>
             <p className="text-lg font-bold font-sans">{username}</p>
             <DownOutlined />
           </Space>

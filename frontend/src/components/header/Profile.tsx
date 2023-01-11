@@ -6,6 +6,7 @@ const Profile = () => {
     window.matchMedia("(min-width: 768px)").matches
   );
   const username = localStorage.getItem("username");
+  const avatar = localStorage.getItem("avatar");
 
   useEffect(() => {
     window
@@ -14,7 +15,7 @@ const Profile = () => {
   }, []);
   return (
     <>
-    {matches ? (<ProfileDropdown username={username} />) : (<ProfileHamburger />)}
+    {matches ? (<ProfileDropdown username={username} avatar={avatar} />) : (<ProfileHamburger />)}
     </>
   );
 };
