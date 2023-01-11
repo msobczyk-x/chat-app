@@ -3,12 +3,12 @@
 ##TODO:
 
 Maciek:
-- limit hobby 10
+
 - rozlacz z chatu po wyjsciu
 - my chats
 - przycisk do dodania pary
 - my chats, tylko kiedy są online
-- 
+
 Radek:
 
 - timeout, po 15 sekundach bez pary znajduje losową osobę (nie wiem czy to ma sens bo połączy sie z użytkownikiem który nie czeka jeszcze 15 sec a dostanie kogoś bez hobby)
@@ -28,6 +28,7 @@ Może kiedyś:
 - waiting room albo coś innego lub minigierka
 
 Zrobione:
+- ✅limit hobby 10
 - ✅łączyło przynajmniej jak są jedno wspólne zainteresowanie
 - ✅cors 
 - ✅walidacja username email przy rejestracji
