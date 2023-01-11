@@ -1,15 +1,15 @@
-const Chat = require("../models/chatModel");
+const { ChatRoom, userPairs } = require("../models/chatModel");
 
-const saveMessagesToDB = (username, messages, room) => {
+const saveMessagesToDB = (username, messages, room, pair) => {
   if (messages) {
-    Chat.findOne({ username: username }, (err, chat) => {
+    ChatRoom.findOne({ username: username }, (err, chat) => {
       if (!chat) {
-        Chat.create({
+        ChatRoom.create({
           username: username,
-          roomMessages: [{ roomId: room, messages: messages }],
+          roomMessages: [{ pair: pair, messages: messages }],
         });
       } else {
-        chat.roomMessages.push({ roomId: room, messages: messages });
+        chat.roomMessages.push({ pair: pair, messages: messages });
         chat.save((err, updated) => {
           if (err) console.log(err);
         });
@@ -17,5 +17,24 @@ const saveMessagesToDB = (username, messages, room) => {
     });
   }
 };
+const saveUserPairsToDB = (username, newPairs) => {
+  if (newPairs[username] == null) return;
+  userPairs.findOne({ username: username }, (err, pairs) => {
+    if (!pairs) {
+      userPairs.create({
+        username: username,
+        pairs: newPairs[username],
+      });
+    } else {
+      let oldPairs = pairs.pairs;
+      let allPairs = oldPairs.concat(newPairs[username]);
+      let uniquePairs = new Set(allPairs);
+      pairs.pairs = Array.from(uniquePairs);
+      pairs.save((err, updated) => {
+        if (err) console.log(err);
+      });
+    }
+  });
+};
 
-module.exports = saveMessagesToDB;
+module.exports = { saveMessagesToDB, saveUserPairsToDB };

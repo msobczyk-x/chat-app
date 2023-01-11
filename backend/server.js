@@ -7,7 +7,10 @@ const userRouters = require("./routes/userRoutes");
 const userResources = require("./routes/userResources");
 const { notFound, errorHandler } = require("./middlewares/errorMiddleware");
 const connectDB = require("./config/db.js");
-const saveMessagesToDB = require("./utils/serverControlles");
+const {
+  saveMessagesToDB,
+  saveUserPairsToDB,
+} = require("./utils/serverControlles");
 const cors = require("cors");
 const { emit } = require("./models/userModel");
 const { logout } = require("./controllers/userControllers");
@@ -24,7 +27,10 @@ app.use(function (req, res, next) {
 });
 app.options("*", function (req, res) {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  res.header(
+    "Access-Control-Allow-Methods",
+    "GET,POST,PUT,PATCH,DELETE,OPTIONS"
+  );
   res.send();
 });
 
@@ -53,6 +59,9 @@ let room = "";
 let messages = {};
 let usernames = {};
 let freeUserLen = 0;
+let users_status = {};
+let user_pairs = {};
+let pair = "";
 
 io.on("connection", (socket) => {
   console.log("a user connected");
@@ -63,6 +72,9 @@ io.on("connection", (socket) => {
   // if (Object.values(usernames).includes(username)) {
   //   console.log("asd");
   // }
+  setInterval(() => {
+    socket.emit("users_status", users_status);
+  }, 60000);
 
   socket.on("findMatch", () => {
     const userHobby = hobbys.find((hobby) => hobby.id === socket.id);
@@ -79,7 +91,15 @@ io.on("connection", (socket) => {
       }))
       .reduce((acc, cur) => (acc.matches >= cur.matches ? acc : cur), 0);
 
-    if (bestMatch.matches >= 1 && bestMatch.res.id !== socket.id) {
+    if (bestMatch.matches >= 0 && bestMatch.res.id !== socket.id) {
+      pair = bestMatch.res.username;
+      user_pairs[userHobby.username]
+        ? user_pairs[userHobby.username].push(pair)
+        : (user_pairs[userHobby.username] = [pair]);
+
+      user_pairs[pair]
+        ? user_pairs[pair].push(userHobby.username)
+        : (user_pairs[pair] = [userHobby.username]);
       socket.emit("match", `${bestMatch.res.id} ${socket.id}`);
       io.to(bestMatch.res.id).emit("match", `${bestMatch.res.id} ${socket.id}`);
 
@@ -115,11 +135,13 @@ io.on("connection", (socket) => {
 
   socket.on("register username", (newUsername, id, hobby) => {
     username = newUsername;
+    users_status[username] = "online";
     // socket.id = id;
     // console.log(hobby);
     users.push({ socket: socket, status: 0 });
     hobbys.push({
       id: socket.id,
+      username: newUsername,
       hobby: hobby,
     });
     socket.emit("username registered");
@@ -128,26 +150,26 @@ io.on("connection", (socket) => {
     // console.log(usernames);
   });
 
-  socket.on("chat message", (message, username) => {
+  socket.on("chat message", (message, user) => {
     if (messages[room]) {
       messages[room].push({
-        username: username,
+        username: user,
         message: message,
         date: new Date(),
       });
     } else {
       messages[room] = [
         {
-          username: username,
+          username: user,
           message: message,
           date: new Date(),
         },
       ];
     }
-    if (messages[room].length > 20){
+    if (messages[room].length > 20) {
       console.log("emit accept pair");
     }
-    socket.to(room).emit("chat message", username, message);
+    socket.to(room).emit("chat message", user, message);
   });
 
   socket.on("join room", (newRoom, sendMessage) => {
@@ -158,8 +180,15 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", function () {
     console.log("user disconnected");
+    users_status[
+      username
+    ] = `${new Date().toLocaleDateString()} ${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}`;
+    console.log(users_status[username]);
     socket.to(room).emit("user disconnected");
-    saveMessagesToDB(username, messages[room], room);
+    console.log(user_pairs);
+    saveMessagesToDB(username, messages[room], room, pair);
+    saveUserPairsToDB(username, user_pairs);
+    pair = "";
     hobbys = hobbys.filter((hobby) => hobby.id !== socket.id);
     users = users.filter((user) => user.socket.id != socket.id);
   });

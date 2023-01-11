@@ -26,6 +26,15 @@ const userSchema = new Schema(
     dateOfBirth: {
       type: Date,
       required: [false, "Please enter date of birth"],
+      // validate: {
+      //   validator: function (value) {
+      //     let date = new Date();
+      //     // add validation function here
+      //     date.setFullYear(date.getFullYear() - 16);
+      //     return value < date;
+      //   },
+      //   message: "You must be at least 16 years old",
+      // },
       min: "1900-01-01",
       max: "2022-12-31",
     },
