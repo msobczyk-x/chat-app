@@ -19,6 +19,7 @@ const registerUser = async (req, res) => {
         password,
         dateOfBirth,
         newUser: true,
+        avatar: "avatar1",
       });
       await user.validate();
       if (user) {

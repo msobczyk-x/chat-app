@@ -42,6 +42,10 @@ const userSchema = new Schema(
       type: Boolean,
       required: true,
     },
+    avatar: {
+      type: "String",
+      required: false,
+    },
     hobby: [{ type: String }],
   },
   {
