@@ -4,7 +4,7 @@
 
 Maciek:
 
-- rozlacz z chatu po wyjsciu
+
 - my chats
 - przycisk do dodania pary
 - my chats, tylko kiedy są online
@@ -28,6 +28,7 @@ Może kiedyś:
 - waiting room albo coś innego lub minigierka
 
 Zrobione:
+- ✅rozlacz z chatu po wyjsciu
 - ✅limit hobby 10
 - ✅łączyło przynajmniej jak są jedno wspólne zainteresowanie
 - ✅cors 
