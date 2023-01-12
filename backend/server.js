@@ -97,13 +97,13 @@ io.on("connection", (socket) => {
       pair = bestMatch.res.username;
       currentPair[pair] = userHobby.username;
       currentPair[userHobby.username] = pair;
-      user_pairs[userHobby.username]
-        ? user_pairs[userHobby.username].push(pair)
-        : (user_pairs[userHobby.username] = [pair]);
+      // user_pairs[userHobby.username]
+      //   ? user_pairs[userHobby.username].push(pair)
+      //   : (user_pairs[userHobby.username] = [pair]);
 
-      user_pairs[pair]
-        ? user_pairs[pair].push(userHobby.username)
-        : (user_pairs[pair] = [userHobby.username]);
+      // user_pairs[pair]
+      //   ? user_pairs[pair].push(userHobby.username)
+      //   : (user_pairs[pair] = [userHobby.username]);
 
       socket.emit("match", `${bestMatch.res.id} ${socket.id}`);
       io.to(bestMatch.res.id).emit("match", `${bestMatch.res.id} ${socket.id}`);
@@ -180,16 +180,41 @@ io.on("connection", (socket) => {
 
   socket.on("accept result", (nickname, result) => {
     acceptsPair[nickname] = result;
+    if (result && acceptsPair[currentPair[nickname]]) {
+      console.log("paired");
+      user_pairs[nickname]
+        ? user_pairs[nickname].push(currentPair[nickname])
+        : (user_pairs[nickname] = [currentPair[nickname]]);
 
-    if (acceptsPair[currentPair[nickname]] !== null) {
-      if (result && acceptsPair[currentPair[nickname]]) {
-        console.log("paired");
-      } else {
+      user_pairs[currentPair[nickname]]
+        ? user_pairs[currentPair[nickname]].push(nickname)
+        : (user_pairs[currentPair[nickname]] = [nickname]);
+    } else if (acceptsPair[currentPair[nickname]] !== null) {
+      if (!result || !acceptsPair[currentPair[nickname]]) {
+        socket.emit("end chat");
+        socket.to(room).emit("end chat");
         console.log("not paired");
       }
-    } else {
-      console.log("pair not decided yet");
     }
+
+    // if (acceptsPair[currentPair[nickname]] !== null) {
+    //   if (result && acceptsPair[currentPair[nickname]]) {
+    //     console.log("paired");
+    //     user_pairs[nickname]
+    //       ? user_pairs[nickname].push(currentPair[nickname])
+    //       : (user_pairs[nickname] = [currentPair[nickname]]);
+
+    //     user_pairs[currentPair[nickname]]
+    //       ? user_pairs[currentPair[nickname]].push(nickname)
+    //       : (user_pairs[currentPair[nickname]] = [nickname]);
+    //   } else {
+    //     socket.emit("end chat");
+    //     socket.to(room).emit("end chat");
+    //     console.log("not paired");
+    //   }
+    // } else {
+    //   console.log("pair not decided yet");
+    // }
   });
 
   socket.on("join room", (newRoom, sendMessage) => {
@@ -206,11 +231,12 @@ io.on("connection", (socket) => {
     console.log(users_status[username]);
     socket.to(room).emit("user disconnected");
     // console.log(user_pairs);
-    console.log(username, pair);
-    saveMessagesToDB(username, messages[room], room, pair);
+    saveMessagesToDB(username, messages[room], room, currentPair[username]);
+    // saveMessagesToDB(currentPair[username], messages[room], room, username);
     saveUserPairsToDB(username, user_pairs);
     pair = "";
     acceptsPair[username] = null;
+    acceptsPair[currentPair[username]] = null;
     currentPair[username] = null;
     hobbys = hobbys.filter((hobby) => hobby.id !== socket.id);
     users = users.filter((user) => user.socket.id != socket.id);

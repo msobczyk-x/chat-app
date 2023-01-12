@@ -84,6 +84,10 @@ const [result, setResult] = useState(false);
       });
 
     });
+    sc.on("end chat", () => {
+      console.log("block chat and show button for new connect");
+      
+    });
     return () => {
       sc.off("match");
       sc.off("join room");
