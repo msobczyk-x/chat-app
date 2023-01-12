@@ -62,6 +62,8 @@ let freeUserLen = 0;
 let users_status = {};
 let user_pairs = {};
 let pair = "";
+let acceptsPair = {};
+let currentPair = {};
 
 io.on("connection", (socket) => {
   console.log("a user connected");
@@ -93,6 +95,8 @@ io.on("connection", (socket) => {
 
     if (bestMatch.matches >= 0 && bestMatch.res.id !== socket.id) {
       pair = bestMatch.res.username;
+      currentPair[pair] = userHobby.username;
+      currentPair[userHobby.username] = pair;
       user_pairs[userHobby.username]
         ? user_pairs[userHobby.username].push(pair)
         : (user_pairs[userHobby.username] = [pair]);
@@ -100,6 +104,7 @@ io.on("connection", (socket) => {
       user_pairs[pair]
         ? user_pairs[pair].push(userHobby.username)
         : (user_pairs[pair] = [userHobby.username]);
+
       socket.emit("match", `${bestMatch.res.id} ${socket.id}`);
       io.to(bestMatch.res.id).emit("match", `${bestMatch.res.id} ${socket.id}`);
 
@@ -166,10 +171,25 @@ io.on("connection", (socket) => {
         },
       ];
     }
-    if (messages[room].length > 20) {
-      console.log("emit accept pair");
+    if (messages[room].length === 5) {
+      socket.to(room).emit("accept pair");
+      socket.emit("accept pair");
     }
     socket.to(room).emit("chat message", user, message);
+  });
+
+  socket.on("accept result", (nickname, result) => {
+    acceptsPair[nickname] = result;
+
+    if (acceptsPair[currentPair[nickname]] !== null) {
+      if (result && acceptsPair[currentPair[nickname]]) {
+        console.log("paired");
+      } else {
+        console.log("not paired");
+      }
+    } else {
+      console.log("pair not decided yet");
+    }
   });
 
   socket.on("join room", (newRoom, sendMessage) => {
@@ -185,10 +205,13 @@ io.on("connection", (socket) => {
     ] = `${new Date().toLocaleDateString()} ${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}`;
     console.log(users_status[username]);
     socket.to(room).emit("user disconnected");
-    console.log(user_pairs);
+    // console.log(user_pairs);
+    console.log(username, pair);
     saveMessagesToDB(username, messages[room], room, pair);
     saveUserPairsToDB(username, user_pairs);
     pair = "";
+    acceptsPair[username] = null;
+    currentPair[username] = null;
     hobbys = hobbys.filter((hobby) => hobby.id !== socket.id);
     users = users.filter((user) => user.socket.id != socket.id);
   });
