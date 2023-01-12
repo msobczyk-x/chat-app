@@ -13,7 +13,7 @@ Radek:
 
 - timeout, po 15 sekundach bez pary znajduje losową osobę (nie wiem czy to ma sens bo połączy sie z użytkownikiem który nie czeka jeszcze 15 sec a dostanie kogoś bez hobby)
 - ✅?mychats
-- avatar1/avatar2/avatar3/avatar4 do zapisywania w bazie danych w polu avatar, nie potrzebne przy rejestrowaniu, dopiero przy wyborze z profilu
+- ✅avatar1/avatar2/avatar3/avatar4 do zapisywania w bazie danych w polu avatar, nie potrzebne przy rejestrowaniu, dopiero przy wyborze z profilu
 - mychats pobieranie listy osób, dopiero po kliknięciu pobiera całą rozmowę z daną osobą
 - status pending, accepted, notaccepted
 
