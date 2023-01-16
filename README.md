@@ -8,6 +8,7 @@ Maciek:
 - my chats
 - przycisk do dodania pary
 - my chats, tylko kiedy są online
+- wspolne hobby wyswietla
 
 Radek:
 
