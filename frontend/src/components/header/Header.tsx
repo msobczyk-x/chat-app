@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import Profile from "./Profile";
 import Menu from "./Menu";
-import { Outlet } from "react-router-dom";
+
 
 const Header = () => {
   const [isLoggedIn, setIsLoggedIn] = React.useState(false);
@@ -14,7 +14,7 @@ const Header = () => {
   }),[];
 
   return (
-    <div className="header flex mt-10 mx-10 ">
+    <div className="header flex mt-4 mx-4 ">
       {isLoggedIn ? <Profile /> : <Menu />}
     </div>
   );

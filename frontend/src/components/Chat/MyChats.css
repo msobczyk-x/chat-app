@@ -6,3 +6,11 @@
     border-radius: 50%;
     display: inline-block;
   }
+
+  .dot-online {
+    border-radius: 50%;
+    display: inline-block;
+    background-color: #4CAF50;
+    height: 15px;
+    width: 15px;
+  }

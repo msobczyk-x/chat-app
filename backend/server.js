@@ -138,6 +138,11 @@ io.on("connection", (socket) => {
   });
 
   socket.on("tryToFindMatch", () => {
+    users.forEach((user) => {
+      if (user.socket.id === socket.id) {
+        user.status = 0;
+      }
+    });
     let prevPair = previousPair[username]
       ? previousPair[username].username
       : false;
@@ -152,8 +157,8 @@ io.on("connection", (socket) => {
     // console.log(freeUserLen);
     // console.log(users);
 
-    let currentUser = users.filter((user) => user.socket.id === socket.id);
-    if (currentUser[0].status === 0) {
+    let currentUser = users.find((user) => user.username === username);
+    if (currentUser && currentUser.status === 0) {
       if (freeUserLen >= 1) {
         socket.emit("connection");
       } else {
@@ -236,6 +241,9 @@ io.on("connection", (socket) => {
       console.log("not paired");
     } else if (result && acceptsPair[currentPair[nickname].username]) {
       console.log("paired");
+      socket.emit("bothAccepted");
+      socket.to(currentPair[username].socket.id).emit("bothAccepted");
+
       userPairs[nickname]
         ? userPairs[nickname].push(currentPair[nickname].username)
         : (userPairs[nickname] = [currentPair[nickname].username]);
@@ -257,8 +265,8 @@ io.on("connection", (socket) => {
     usersStatus[
       username
     ] = `${new Date().toLocaleDateString()} ${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}`;
-    let tmpUser = users.find((user) => user.socket.id === socket.id);
-    if (tmpUser && tmpUser.status === 1) {
+    // let tmpUser = users.find((user) => user.socket.id === socket.id);
+    if (currentPair[username]) {
       socket.to(currentPair[username].socket.id).emit("user disconnected");
       saveMessagesToDB(
         username,

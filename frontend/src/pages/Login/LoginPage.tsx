@@ -9,13 +9,13 @@ const LoginPage = () => {
   const [errorMessage, setErrorMessage] = useState(null);
 
   return (
-    <div className="login-page w-full h-screen flex flex-col items-center">
+    <div className="login-page w-full h-[calc(100vh-4rem)] flex flex-col items-center">
       <motion.div
         initial={{ opacity: 0, scale: 0.5 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.5 }}
       >
-        <div className="bg-slate-100 backdrop-blur-3xl w-96 flex flex-col justify-center items-center rounded-lg mt-48 p-5">
+        <div className=" backdrop-blur-3xl w-96 flex flex-col justify-center items-center rounded-lg mt-32 p-5  ">
           <div className="text-3xl font-bold ">Login</div>
           <form
             className="flex flex-col justify-center items-center p-5"
