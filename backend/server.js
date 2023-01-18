@@ -16,15 +16,12 @@ const app = express();
 const http = require("http").Server(app);
 
 // const server = http.createServer(app);
-const io = require("socket.io")(http, {
-  cors: {
-    origin: "http://localhost:3000",
-  },
-});
+const io = require("socket.io")(http);
 
 app.use(function (req, res, next) {
-  res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Credentials", "true");
+  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
+  res.setHeader("Access-Control-Allow-Methods", "POST,GET,OPTIONS,PUT,DELETE");
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type,Accept");
   next();
 });
 app.options("*", function (req, res) {
@@ -35,7 +32,12 @@ app.options("*", function (req, res) {
   );
   res.send();
 });
-app.use(cors());
+
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+  })
+);
 
 connectDB();
 const oneDay = 1000 * 60 * 60 * 24;
@@ -69,6 +71,7 @@ let previousPair = {};
 io.on("connection", (socket) => {
   console.log("a user connected");
   let username = "";
+
   socket.emit("connected");
 
   setInterval(() => {
@@ -169,8 +172,9 @@ io.on("connection", (socket) => {
       socket: socket,
       username: newUsername,
       hobby: hobby,
-      status: 0,
+      status: 1,
     });
+
     acceptsPair[username] = null;
     socket.emit("username registered");
   });
@@ -202,6 +206,25 @@ io.on("connection", (socket) => {
     socket
       .to(currentPair[username].socket.id)
       .emit("chat message", user, message);
+  });
+
+  socket.on("get pair", (username) => {
+    const currentUser = users.find((user) => user.socket.id === socket.id);
+    const userToPair = users.find((user) => user.username === username);
+    currentPair[currentUser.username] = userToPair;
+    currentPair[userToPair.username] = currentUser;
+    socket.emit("match", `${userToPair.socket.id} ${socket.id}`);
+    socket
+      .to(best.socket.id)
+      .emit("match", `${userToPair.socket.id} ${socket.id}`);
+    users.forEach((user) => {
+      if (
+        user.socket.id === socket.id ||
+        user.socket.id === userToPair.socket.id
+      ) {
+        user.status = 1;
+      }
+    });
   });
 
   socket.on("accept result", (nickname, result) => {
