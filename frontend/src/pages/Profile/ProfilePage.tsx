@@ -24,9 +24,7 @@ const ProfilePage = () => {
 
   return (
     <motion.div
-      initial={{ opacity: 0}}
-      animate={{ opacity: 1}}
-      transition={{ duration: 0.5 }}
+ 
       className="flex h-[calc(100vh-6.5rem)] gap-2 w-full flex-col md:flex-row"
     >
       <div className="w-full h-full bg-slate-200 rounded my-2 ml-2 flex flex-col md:w-1/6">

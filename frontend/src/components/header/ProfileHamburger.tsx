@@ -94,7 +94,7 @@ const ProfileHamburger = () => {
                     }
                     onClick={
                       () => {
-                        window.location.reload();
+                        /* window.location.reload(); */
 
                     }
                   }

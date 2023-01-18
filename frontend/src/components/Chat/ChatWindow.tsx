@@ -2,6 +2,8 @@ import React, { useContext, useEffect, useState, useRef } from "react";
 import axios from "axios";
 import Spinner from "../../components/Spinner/Spinner";
 import { SocketContext, sc } from "../../context/socket";
+import { faL } from "@fortawesome/free-solid-svg-icons";
+import TextTransition, { presets } from "react-text-transition";
 
 type Message = {
   username: string;
@@ -15,13 +17,13 @@ const ChatWindow = () => {
   const [userMessages, setUserMessages] = useState<Message[]>([]);
   const [messageValue, setMessageValue] = useState("");
   const [waitingForAccept, setWaitingForAccept] = useState(false);
+  const [sharedHobbies, setSharedHobbies] = useState<string[]>([] as any);
+  const [strangerUsername, setStrangerUsername] = useState("");
+  const [status, setStatus] = useState("Connected");
 
-  const [status, setStatus] = useState("");
-
-  function sendEmit(result:boolean) {
+  function sendEmit(result: boolean) {
     sc.emit("accept result", username, result);
     setWaitingForAccept(true);
-    
   }
 
   let newRoom: string;
@@ -30,6 +32,19 @@ const ChatWindow = () => {
   const [socketID, setSocketID] = useState<any>(
     localStorage.getItem("socketId")
   );
+
+  const fetchHobby = () => {
+    let userHobbies:any = [];
+    let strangerHobbies:any = [];
+    axios.get(`http://localhost:3000/api/getUserHobby/${username}`).then((response) => {
+      userHobbies = response.data.data[0].hobbies;
+    });
+    axios.get(`http://localhost:3000/api/getUserHobby/${strangerUsername}`).then((response) => {
+      strangerHobbies = response.data.data[0].hobbies;
+      
+    });
+    return userHobbies.filter((hobby:any) => strangerHobbies.includes(hobby));
+  }
 
   useEffect(() => {
     setSocketID(localStorage.getItem("socketId"));
@@ -44,35 +59,41 @@ const ChatWindow = () => {
     });
     sc.on("accept pair", () => {
       console.log("accept pair");
-      setStatus("AcceptionStatus")
+      setStatus("AcceptionStatus");
+      setWaitingForAccept(false);
     });
     // sc.on("id", (id) => {
     //   localStorage.setItem("socketId", id);
     // });
 
-  
     // sc.on("tryAgain",()=>{
     //   sc.emit("register username", username);
     // })
-    sc.on("bothAccepted", () => {
-      setStatus("Matched");
-      console.log("both accepted");
-    });
-    sc.on("match", (room) => {
+    if (status === "LookingForPair") {
+      sc.on("tryAgain", () => {
+        sc.emit("tryToFindMatch");
+      });
+    }
+
+
+    sc.on("match", (room, username) => {
       console.log(room);
       newRoom = room;
       setIsConnected(true);
       setStatus("Matched");
-      
+      /* setStrangerUsername(username);
+      setSharedHobbies(fetchHobby()); */
       sc.emit("join room", newRoom, (response: string) => {
         console.log(response);
         console.log(status);
         setStatus("Matched");
       });
     });
+
     sc.on("user disconnected", () => {
       console.log("user disconnected");
       setStatus("Disconnected");
+      setUserMessages([]);
     });
     sc.on("end chat", () => {
       console.log("block chat and show button for new connect");
@@ -80,6 +101,10 @@ const ChatWindow = () => {
     });
     sc.on("left room", (message) => {
       console.log(message);
+    });
+    sc.on("bothAccepted", () => {
+      setStatus("Matched");
+      console.log("both accepted");
     });
     return () => {
       sc.off("connection");
@@ -91,6 +116,7 @@ const ChatWindow = () => {
       sc.off("tryAgain");
       sc.off("connected");
       sc.off("username registered");
+      sc.off("bothAccepted");
     };
   }, []);
 
@@ -123,12 +149,36 @@ const ChatWindow = () => {
   useEffect(() => {
     socket.on("chat message", (username, message) => {
       createMessage(message, username);
+      
       console.log(`${username}: ${message}`);
     });
     return () => {
       socket.off("chat message");
     };
   }, [userMessages]);
+  const [index, setIndex] = useState(0);
+  const TEXTS = [
+    "💖",
+    "🥰",
+    "😍",
+    "👪",
+    "👫",
+    "👬",
+    "📚",
+    "📖",
+    "💪",
+    "👊",
+    "🤝",
+  ];
+
+  const TEXTSDISCONNECT = ["💁‍♀️", "🏃‍♂️", "💁", "🏃", "💁‍♂️", "🏃"];
+  React.useEffect(() => {
+    const intervalId = setInterval(
+      () => setIndex((index) => index + 1),
+      3000 // every 3 seconds
+    );
+    return () => clearTimeout(intervalId);
+  }, []);
 
   return (
     <div
@@ -137,24 +187,57 @@ const ChatWindow = () => {
     >
       {
         {
-          'Connected': (
+          Connected: (
             <>
-              <div className="title font-sans font-bold text-2xl text-left pl-5 pt-5 flex items-center justify-center bg-red-400 ">
+              <div className="text-[3rem] font-semibold text-center w-full h-full flex flex-col items-center justify-center ">
+                <div className="flex flex-row pb-2">
+                  <p className="py-4 px-4">Hi, </p>
+                  <p className="py-4 px-6 bg-blue-200 rounded-full shadow-sm backdrop-blur">
+                    {username}
+                  </p>
+                </div>
+
+                <p className="text-[2.5rem] mb-10">Let's begin !</p>
                 <button
+                  className="transition ease-in-out hover:-translate-y-1 hover:scale-110 hover:bg-blue-300 hover:text-black delay-150 bg-red-500 text-white p-4 rounded-full text-[2rem]"
                   onClick={() => {
                     sc.emit("tryToFindMatch");
                     setStatus("LookingForPair");
                   }}
                 >
-                  Look for pair
+                  Look for pair 👀
                 </button>
               </div>
             </>
           ),
-          'Matched': (
+          Matched: (
             <div className="w-full h-full">
-              <div className="title font-sans font-bold text-2xl text-left pl-5 pt-5 ">
-                Chat
+              <div className="title font-sans font-bold text-md text-left pl-5 pt-5 justify-between flex flex-row items-center">
+                <p className="text-2xl">Chat</p>
+                <div className="flex flex-row items-center justify-center">
+                <div className=" text-md font-semibold">Shared hobbies:</div>
+                <div
+                  className={`px-2 py-1 rounded-full border-2 mx-2 border-red-400 font-semibold text-sm
+          bg-red-400 text-white`}
+
+                >
+                  Animals
+                </div>
+                <div
+                  className={`px-2 py-1 rounded-full border-2 mx-2 border-red-400 font-semibold text-sm
+          bg-red-400 text-white`}
+
+                >
+                  Animals
+                </div>
+                <div
+                  className={`px-2 py-1 rounded-full border-2 mx-2 border-red-400 font-semibold text-sm
+          bg-red-400 text-white`}
+
+                >
+                  Animals
+                </div>
+                </div>
               </div>
               <div className="chat-window flex flex-col items-center w-full h-full">
                 <div
@@ -214,34 +297,72 @@ const ChatWindow = () => {
               </div>
             </div>
           ),
-          'LookingForPair': <Spinner text="Looking for your best match" />,
-          'Disconnected': (<><h1>User left room.</h1>
-          <button
-          className="bg-green-500 rounded-full ml-5 p-2 transition ease-in-out hover:-translate-y-1 hover:scale-110 delay-150 hover:bg-slate-600 "
-                  onClick={() => {
-                    sc.emit("tryToFindMatch");
-                    setStatus("LookingForPair");
-                  }}
-                >
-                  Try again
-                </button>
-                </>),
-                'AcceptionStatus': (
-                  <>
-                  {waitingForAccept ? <Spinner text="Waiting for acceptation" /> :
-
-                  <>
-                  <h1>Do you want accept this pair ?</h1>
-                  <button className="bg-green-500 rounded-full ml-5 p-2 transition ease-in-out hover:-translate-y-1 hover:scale-110 delay-150 hover:bg-slate-600 "
-                  onClick={()=> sendEmit(true)}
-                  >Yes</button>
-                  <button className="bg-red-500 rounded-full ml-5 p-2 transition ease-in-out hover:-translate-y-1 hover:scale-110 delay-150 hover:bg-slate-600 "
-                  onClick={()=> sendEmit(false)}
-                  >No</button>
-                  </>
-                }
-                  </>
-                )
+          LookingForPair: (
+            <div className="w-full h-full items-center justify-center text-bold flex flex-row flex-wrap backdrop-blur-lg p-0 m-0">
+              <p className="text-[2.5rem] text-black font-black">
+                Searching for your new
+              </p>
+              <TextTransition
+                inline
+                className="text-[5rem]"
+                springConfig={presets.wobbly}
+              >
+                {TEXTS[index % TEXTS.length]}
+              </TextTransition>
+            </div>
+          ),
+          Disconnected: (
+            <div className="w-full h-full items-center justify-center font-bold flex flex-col flex-wrap backdrop-blur-lg p-0 m-0 text-[3rem]">
+              <div className="">
+                <div className="w-full h-full items-center justify-center text-bold flex flex-row flex-wrap backdrop-blur-lg">
+                  <p className="text-[2.5rem] text-black font-black pr-6">
+                    Stranger left the chat
+                  </p>
+                  <TextTransition
+                    inline
+                    className="text-[4rem]"
+                    springConfig={presets.wobbly}
+                  >
+                    {TEXTSDISCONNECT[index % TEXTSDISCONNECT.length]}
+                  </TextTransition>
+                </div>
+              </div>
+              <button
+                className="bg-red-500 rounded-full p-4 transition ease-in-out hover:-translate-y-1 hover:scale-110 delay-150 hover:bg-red-300 text-[2rem] text-white shadow backdrop-blur mt-6"
+                onClick={() => {
+                  sc.emit("tryToFindMatch");
+                  setStatus("LookingForPair");
+                }}
+              >
+                Try again
+              </button>
+            </div>
+          ),
+          AcceptionStatus: (
+            <div className="w-full h-full items-center justify-center font-bold flex flex-col flex-wrap backdrop-blur-lg p-0 m-0">
+              {waitingForAccept ? (
+                <Spinner className="" text="Waiting for acceptation" />
+              ) : (
+                <div className="w-full h-full items-center justify-center text-bold flex flex-col flex-wrap backdrop-blur-lg p-0 m-0 text-[3rem]">
+                  <h1 className="mb-12 text-center">Do you like him/her ?</h1>
+                  <div className="flex flex-row">
+                    <button
+                      className="bg-green-500 rounded-full p-4 transition ease-in-out hover:-translate-y-1 hover:scale-110 delay-150 hover:bg-green-300 text-[2rem] mr-10 text-white shadow backdrop-blur"
+                      onClick={() => sendEmit(true)}
+                    >
+                      Yes 👍
+                    </button>
+                    <button
+                      className="bg-red-500 rounded-full p-4 transition ease-in-out hover:-translate-y-1 hover:scale-110 delay-150 hover:bg-red-300 text-[2rem] text-white shadow backdrop-blur"
+                      onClick={() => sendEmit(false)}
+                    >
+                      No 👎
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+          ),
         }[status]
       }
     </div>
