@@ -36,7 +36,7 @@ const userSchema = new Schema(
       //   message: "You must be at least 16 years old",
       // },
       min: "1900-01-01",
-      max: "2022-12-31",
+      max: "2023-12-31",
     },
     newUser: {
       type: Boolean,

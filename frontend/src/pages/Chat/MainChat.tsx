@@ -51,15 +51,15 @@ const [result, setResult] = useState(false);
     //   localStorage.setItem("socketId", id);
     // });
     sc.on("connected", () => {
+      
       axios.get(`http://localhost:3000/api/getUser/${username}`)
       .then(res=>{
-        sc.emit("register username", username, res.data._id, res.data.hobby);
-        
+        sc.emit("register username", username, res.data.hobby);
       })
-      sc.on("username registered",()=>{
-        sc.emit("tryToFindMatch");
-      }) 
     });
+    sc.on("username registered",()=>{
+      sc.emit("tryToFindMatch");
+    }) 
 
     sc.on("tryAgain",()=>{
       sc.emit("tryToFindMatch");
@@ -76,27 +76,28 @@ const [result, setResult] = useState(false);
       sc.emit("join room", newRoom, (response: string) => {
         console.log(response);
       });
-
-
-      sc.on("user disconnected", () => {
-        console.log("user disconnected");
-        
-      });
-
+    });
+    sc.on("user disconnected", () => {
+      console.log("user disconnected");
     });
     sc.on("end chat", () => {
       console.log("block chat and show button for new connect");
       
     });
+    sc.on("left room", message => {
+      console.log(message);
+      
+    })
     return () => {
-      sc.off("match");
-      sc.off("join room");
       sc.off("connection");
+      sc.off("left room");
+      sc.off("end chat");
+      sc.off("accept pair");
+      sc.off("user disconnected");
+      sc.off("match");
       sc.off("tryAgain");
-      sc.off("findMatch");
-      sc.off("tryToFindMatch");
       sc.off("connected");
-      sc.off("register username");
+      sc.off("username registered");
     };
   }, []);
 
