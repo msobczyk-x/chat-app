@@ -2,7 +2,6 @@ const express = require("express");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
-const http = require("http");
 const userRouters = require("./routes/userRoutes");
 const userResources = require("./routes/userResources");
 const { notFound, errorHandler } = require("./middlewares/errorMiddleware");
@@ -12,14 +11,17 @@ const {
   saveUserPairsToDB,
 } = require("./utils/serverControlles");
 const cors = require("cors");
-const { emit } = require("./models/userModel");
-const { logout } = require("./controllers/userControllers");
 
 const app = express();
-const server = http.createServer(app);
-const io = require("socket.io")(server);
+const http = require("http").Server(app);
 
-app.use(cors());
+// const server = http.createServer(app);
+const io = require("socket.io")(http, {
+  cors: {
+    origin: "http://localhost:3000",
+  },
+});
+
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Credentials", "true");
@@ -33,6 +35,7 @@ app.options("*", function (req, res) {
   );
   res.send();
 });
+app.use(cors());
 
 connectDB();
 const oneDay = 1000 * 60 * 60 * 24;
@@ -53,104 +56,130 @@ app.use(notFound);
 app.use(errorHandler);
 app.use(cookieParser());
 
-let hobbys = [];
 let users = [];
 let room = "";
 let messages = {};
-let usernames = {};
 let freeUserLen = 0;
-let users_status = [];
-let user_pairs = {};
-let pair = "";
+let usersStatus = {};
+let userPairs = {};
+let acceptsPair = {};
+let currentPair = {};
+let previousPair = {};
 
 io.on("connection", (socket) => {
   console.log("a user connected");
   let username = "";
   socket.emit("connected");
-  // hobbys.push({ id: socket.id, hobby: ["asd"] });
-  // console.log(socket.handshake.headers.cookie);
-  // if (Object.values(usernames).includes(username)) {
-  //   console.log("asd");
-  // }
+
   setInterval(() => {
-    socket.emit("users_status", users_status);
-  }, 5000);
+    socket.emit("usersStatus", usersStatus);
+  }, 60000);
 
   socket.on("findMatch", () => {
-    const userHobby = hobbys.find((hobby) => hobby.id === socket.id);
-    if (!userHobby) return;
-    hobbys = hobbys.filter((hobby) => hobby.id !== socket.id);
+    const userHobby = users.find((user) => user.socket.id === socket.id);
+    if (!userHobby) console.log("sad");
+    let prevPair = previousPair[username]
+      ? previousPair[username].username
+      : false;
 
-    const bestMatch = hobbys
-      .map((res) => ({
-        res,
-        matches: res.hobby.reduce(
-          (acc, cur) => acc + (userHobby.hobby.includes(cur) ? 1 : 0),
-          0
-        ),
-      }))
-      .reduce((acc, cur) => (acc.matches >= cur.matches ? acc : cur), 0);
+    let usersTmp = users.filter(
+      (user) =>
+        user.username !== prevPair &&
+        user.username !== username &&
+        user.status === 0
+    );
 
-    if (bestMatch.matches >= 0 && bestMatch.res.id !== socket.id) {
-      pair = bestMatch.res.username;
-      user_pairs[userHobby.username]
-        ? user_pairs[userHobby.username].push(pair)
-        : (user_pairs[userHobby.username] = [pair]);
+    let count = 0;
+    let best;
+    usersTmp.length > 0
+      ? usersTmp.forEach((user) => {
+          let common = userHobby.hobby.filter((val) =>
+            user.hobby.includes(val)
+          );
+          if (common.length > count) {
+            count = common.length;
+            best = user;
+          }
+        })
+      : setTimeout(() => {
+          console.log(username + " trying...");
+          socket.emit("tryAgain");
+        }, 5000);
 
-      user_pairs[pair]
-        ? user_pairs[pair].push(userHobby.username)
-        : (user_pairs[pair] = [userHobby.username]);
-      socket.emit("match", `${bestMatch.res.id} ${socket.id}`);
-      io.to(bestMatch.res.id).emit("match", `${bestMatch.res.id} ${socket.id}`);
+    // const bestMatch = usersTmp
+    //   .map((res) => ({
+    //     res,
+    //     matches: res.hobby.reduce(
+    //       (acc, cur) => acc + (userHobby.hobby.includes(cur) ? 1 : 0),
+    //       0
+    //     ),
+    //   }))
+    //   .reduce((acc, cur) => (acc.matches >= cur.matches ? acc : cur), 0);
 
-      users = users.map((obj) => {
-        if (obj.socket.id === socket.id || obj.socket.id === bestMatch.res.id) {
-          return {
-            ...obj,
-            status: 1,
-          };
+    if (count > 0) {
+      currentPair[best.username] = userHobby;
+      currentPair[userHobby.username] = best;
+      socket.emit("match", `${best.socket.id} ${socket.id}`);
+      socket.to(best.socket.id).emit("match", `${best.socket.id} ${socket.id}`);
+      users.forEach((user) => {
+        if (user.socket.id === socket.id || user.socket.id === best.socket.id) {
+          user.status = 1;
         }
       });
     } else {
-      socket.emit("tryAgain");
+      setTimeout(() => {
+        console.log(username + " trying...");
+        socket.emit("tryAgain");
+      }, 5000);
     }
   });
 
   socket.on("tryToFindMatch", () => {
+    let prevPair = previousPair[username]
+      ? previousPair[username].username
+      : false;
     freeUserLen = users.filter(
-      (obj) => obj.hasOwnProperty("status") && obj.status === 0
+      (user) =>
+        user.username !== username &&
+        user.hasOwnProperty("status") &&
+        user.status === 0 &&
+        user.username !== prevPair
     ).length;
+    console.log(freeUserLen);
     // console.log(freeUserLen);
+    // console.log(users);
+
     let currentUser = users.filter((user) => user.socket.id === socket.id);
     if (currentUser[0].status === 0) {
-      if (freeUserLen >= 2) {
+      if (freeUserLen >= 1) {
         socket.emit("connection");
       } else {
         setTimeout(() => {
+          console.log(username + " trying...");
           socket.emit("tryAgain");
         }, 5000);
       }
     }
   });
 
-  socket.on("register username", (newUsername, id, hobby) => {
+  socket.on("register username", (newUsername, hobby) => {
     username = newUsername;
-    users_status.push(username);
-    // socket.id = id;
-    // console.log(hobby);
-    users.push({ socket: socket, status: 0 });
-    hobbys.push({
-      id: socket.id,
+    usersStatus[username] = "online";
+    users.push({
+      socket: socket,
       username: newUsername,
       hobby: hobby,
+      status: 0,
     });
+    acceptsPair[username] = null;
     socket.emit("username registered");
-    // console.log(user);
-    // usernames[socket.id] = newUsername;
-    // console.log(usernames);
   });
 
   socket.on("chat message", (message, user) => {
+    let tmpUser = users.find((user) => user.socket.id === socket.id);
+    if (tmpUser.status === 0) {
+      return;
+    }
     if (messages[room]) {
       messages[room].push({
         username: user,
@@ -166,10 +195,33 @@ io.on("connection", (socket) => {
         },
       ];
     }
-    if (messages[room].length > 20) {
-      console.log("emit accept pair");
+    if (messages[room].length === 5) {
+      socket.to(currentPair[username].socket.id).emit("accept pair");
+      socket.emit("accept pair");
     }
-    socket.to(room).emit("chat message", user, message);
+    socket
+      .to(currentPair[username].socket.id)
+      .emit("chat message", user, message);
+  });
+
+  socket.on("accept result", (nickname, result) => {
+    acceptsPair[nickname] = result;
+
+    if (!result) {
+      socket.emit("end chat");
+      socket.to(currentPair[username].socket.id).emit("end chat");
+      console.log("not paired");
+    } else if (result && acceptsPair[currentPair[nickname].username]) {
+      console.log("paired");
+      socket.to(currentPair[username].socket.id).emit("bothAccepted");
+      userPairs[nickname]
+        ? userPairs[nickname].push(currentPair[nickname].username)
+        : (userPairs[nickname] = [currentPair[nickname].username]);
+
+      userPairs[currentPair[nickname].username]
+        ? userPairs[currentPair[nickname].username].push(nickname)
+        : (userPairs[currentPair[nickname].username] = [nickname]);
+    }
   });
 
   socket.on("join room", (newRoom, sendMessage) => {
@@ -180,19 +232,29 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", function () {
     console.log("user disconnected");
-    users_status[
+    usersStatus[
       username
     ] = `${new Date().toLocaleDateString()} ${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}`;
-    console.log(users_status[username]);
-    socket.to(room).emit("user disconnected");
-    console.log(user_pairs);
-    saveMessagesToDB(username, messages[room], room, pair);
-    saveUserPairsToDB(username, user_pairs);
-    pair = "";
-    hobbys = hobbys.filter((hobby) => hobby.id !== socket.id);
+    let tmpUser = users.find((user) => user.socket.id === socket.id);
+    if (tmpUser && tmpUser.status === 1) {
+      socket.to(currentPair[username].socket.id).emit("user disconnected");
+      saveMessagesToDB(
+        username,
+        messages[room],
+        room,
+        currentPair[username].username
+      );
+      saveUserPairsToDB(username, userPairs[username]);
+      // acceptsPair[currentPair[username].socket.username] = null;
+    }
+    // console.log(user_pairs);
+    // saveMessagesToDB(currentPair[username], messages[room], room, username);
+    previousPair[username] = currentPair[username];
+    acceptsPair[username] = null;
+    currentPair[username] = null;
     users = users.filter((user) => user.socket.id != socket.id);
   });
 });
-server.listen(3000, () => {
+http.listen(3000, () => {
   console.log("listening on *:3000");
 });

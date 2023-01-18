@@ -149,7 +149,7 @@ const getUserChats = async function (req, res) {
   }
 };
 const getUserPairs = async (req, res) => {
-  const username = req.params.username;
+  const username = req.body.username;
   const data = await userPairs.find({ username: username });
   if (data) {
     res.status(200).json({ data });
