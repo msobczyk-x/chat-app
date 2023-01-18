@@ -66,6 +66,7 @@ let userPairs = {};
 let pair = "";
 let acceptsPair = {};
 let currentPair = {};
+let previousPair = {};
 
 io.on("connection", (socket) => {
   // const userId = socket.handshake.query.userId;
@@ -81,14 +82,18 @@ io.on("connection", (socket) => {
 
   socket.on("findMatch", () => {
     const userHobby = users.find((user) => user.socket.id === socket.id);
-    if (!userHobby) return;
+    if (!userHobby) console.log("sad");
+    let prevPair = previousPair[username]
+      ? previousPair[username].username
+      : false;
+
     let usersTmp = users.filter(
-      (user) => user.socket.id !== socket.id && user.status !== 1
+      (user) => user.username !== prevPair && user.username !== username
     );
 
+    console.log(usersTmp);
     if (usersTmp.length === 0) {
       socket.emit("tryAgain");
-      return;
     }
 
     const bestMatch = usersTmp
@@ -100,8 +105,6 @@ io.on("connection", (socket) => {
         ),
       }))
       .reduce((acc, cur) => (acc.matches >= cur.matches ? acc : cur), 0);
-
-    if (userHobby.username === bestMatch.res.username) return;
 
     if (bestMatch.matches >= 0) {
       pair = bestMatch.res;
@@ -125,15 +128,23 @@ io.on("connection", (socket) => {
   });
 
   socket.on("tryToFindMatch", () => {
+    let prevPair = previousPair[username]
+      ? previousPair[username].username
+      : false;
     freeUserLen = users.filter(
-      (obj) => obj.hasOwnProperty("status") && obj.status === 0
+      (user) =>
+        user.username !== username &&
+        user.hasOwnProperty("status") &&
+        user.status === 0 &&
+        user.username !== prevPair
     ).length;
+    console.log(freeUserLen);
     // console.log(freeUserLen);
     // console.log(users);
 
     let currentUser = users.filter((user) => user.socket.id === socket.id);
     if (currentUser[0].status === 0) {
-      if (freeUserLen >= 2) {
+      if (freeUserLen >= 1) {
         socket.emit("connection");
       } else {
         setTimeout(() => {
@@ -236,6 +247,7 @@ io.on("connection", (socket) => {
     // console.log(user_pairs);
     // saveMessagesToDB(currentPair[username], messages[room], room, username);
     pair = "";
+    previousPair[username] = currentPair[username];
     acceptsPair[username] = null;
     currentPair[username] = null;
     // hobbys = hobbys.filter((hobby) => hobby.id !== socket.id);
