@@ -23,6 +23,10 @@ export const ChangeAvatar = () => {
         .then((res) => {
           console.log(res.data.message);
           setMessageSuccess(res.data.message);
+          setTimeout(() => {
+            window.location.reload();
+          }
+          , 1000);
         });
     }
     console.log(whichChosen);

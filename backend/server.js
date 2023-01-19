@@ -118,8 +118,7 @@ io.on("connection", (socket) => {
         "match",
         `${best.socket.id} ${socket.id}`,
         userHobby.hobby,
-        best.hobby,
-        
+        best.hobby
       );
       socket
         .to(best.socket.id)
@@ -127,8 +126,7 @@ io.on("connection", (socket) => {
           "match",
           `${best.socket.id} ${socket.id}`,
           userHobby.hobby,
-          best.hobby,
-          
+          best.hobby
         );
       users.forEach((user) => {
         if (user.socket.id === socket.id || user.socket.id === best.socket.id) {
@@ -328,7 +326,26 @@ io.on("connection", (socket) => {
     room = newRoom;
     // sendMessage(`Joined room:'${room}'`);
   });
+  socket.on("leave room", () => {
+    if (currentPair[username]) {
+      socket.to(currentPair[username].socket.id).emit("user disconnected");
+      socket.to(currentPair[username].socket.id).emit("left room");
+      previousPair[username] = currentPair[username];
 
+      acceptsPair[username] = null;
+      saveMessagesToDB(
+        username,
+        messages[room],
+        room,
+        currentPair[username].username
+      );
+      currentPair[username] = null;
+    }
+    // if (previousPair[currentPair[username]]) {
+    //   previousPair[currentPair[username].username] = currentPair[username];
+    //   currentPair[currentPair[username].username] = null;
+    // }
+  });
   socket.on("disconnect", function () {
     console.log("user disconnected");
     saveUserStatus(

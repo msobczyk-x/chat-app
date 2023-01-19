@@ -14,10 +14,11 @@ const HomePage = () => {
     console.log(username);
     window.location.reload();
   };
-  return (
+
+return (
     <>
       <div className="flex flex-col">
-        <div className="HomePage w-full h-[calc(100vh-3.5rem)] backdrop-blur">
+        <div className="HomePage w-full h-[calc(100vh-3.5rem)] backdrop-blur flex flex-row justify-center">
           <motion.div
             initial={{ opacity: 0, scale: 0.5 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -33,6 +34,16 @@ const HomePage = () => {
               </div>
             </div>
           </motion.div>
+ 
+          <motion.div
+
+            initial={{ opacity: 0, scale: 0.5, x: 3000 }}
+            animate={{ opacity: 1, scale: 1, x:0 }}
+            transition={{ duration: 1 }}
+          >
+
+            
+            </motion.div>
         </div>
         <div className="h-[25vh] bg-white mt-10">
           <div className="flex flex-col items-center justify-center py-5">
