@@ -220,10 +220,12 @@ io.on("connection", (socket) => {
         },
       ];
     }
-    if (messages[room].length === 5) {
-      socket.to(currentPair[username].socket.id).emit("accept pair");
-      socket.emit("accept pair");
-    }
+
+    if (!allUserPairs[username].includes(currentPair[username].username))
+      if (messages[room].length === 5) {
+        socket.to(currentPair[username].socket.id).emit("accept pair");
+        socket.emit("accept pair");
+      }
     currentPair[username]
       ? socket
           .to(currentPair[username].socket.id)
@@ -233,15 +235,18 @@ io.on("connection", (socket) => {
 
   socket.on("get pair", (nickname) => {
     const currentUser = users.find((user) => user.username === username);
-    if (currentUser && currentUser.status === 0) {
+    if (currentUser && !currentPair[username]) {
       const userToPair = users.find((user) => user.username === nickname);
-      if (userToPair && userToPair.status === 0)
-        socket.to(userToPair.socket.id).emit("accept conversation");
-      else socket.emit("user in conversation");
+      if (userToPair && !currentPair[userToPair.username]) {
+        socket
+          .to(userToPair.socket.id)
+          .emit("accept conversation", username, userToPair.username);
+        socket.emit("waiting for accept from pair", userToPair.username);
+      } else socket.emit("user in conversation");
     }
   });
   socket.on("accepted conversation", (nickname) => {
-    const currentUser = users.find((user) => user.socket.id === socket.id);
+    const currentUser = users.find((user) => user.username === username);
     const userToPair = users.find((user) => user.username === nickname);
     currentPair[currentUser.username] = userToPair;
     currentPair[userToPair.username] = currentUser;
@@ -270,7 +275,9 @@ io.on("connection", (socket) => {
     });
   });
   socket.on("not accepted conversation", (nickname) => {
-    socket.emit("pair not accepted");
+    const tmpUser = users.find((user) => user.username === nickname);
+
+    socket.to(tmpUser.socket.id).emit("pair not accepted");
   });
 
   socket.on("accept result", (nickname, result) => {
@@ -286,7 +293,7 @@ io.on("connection", (socket) => {
 
       acceptsPair[currentPair[username].username] = null;
       acceptsPair[username] = null;
-      
+
       currentPair[currentPair[username].username] = null;
       currentPair[username] = null;
 
