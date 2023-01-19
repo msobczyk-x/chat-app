@@ -14,10 +14,10 @@ const {
   saveUserStatus,
 } = require("./utils/serverControlles");
 const cors = require("cors");
-const { unwatchFile } = require("fs");
 
 const app = express();
 const http = require("http").Server(app);
+const port = process.env.PORT || 3000;
 
 // const server = http.createServer(app);
 const io = require("socket.io")(http);
@@ -55,7 +55,7 @@ const sessionMiddleware = session({
 app.use(sessionMiddleware);
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use("/static", express.static("./static/"));
+// app.use("/static", express.static("./static/"));
 app.use("/api/auth", userRouters);
 app.use("/api", userResources);
 app.use(notFound);
@@ -110,16 +110,6 @@ io.on("connection", (socket) => {
           socket.emit("tryAgain");
         }, 5000);
 
-    // const bestMatch = usersTmp
-    //   .map((res) => ({
-    //     res,
-    //     matches: res.hobby.reduce(
-    //       (acc, cur) => acc + (userHobby.hobby.includes(cur) ? 1 : 0),
-    //       0
-    //     ),
-    //   }))
-    //   .reduce((acc, cur) => (acc.matches >= cur.matches ? acc : cur), 0);
-
     if (count > 0) {
       currentPair[best.username] = userHobby;
       currentPair[userHobby.username] = best;
@@ -154,7 +144,7 @@ io.on("connection", (socket) => {
   socket.on("tryToFindMatch", () => {
     if (!currentPair[username]) {
       users.forEach((user) => {
-        if (user.socket.id === socket.id) {
+        if (user.username === username) {
           user.status = 0;
         }
       });
@@ -200,6 +190,8 @@ io.on("connection", (socket) => {
       hobby: hobby,
       status: 1,
     });
+
+    // console.log(await getUserStatus(allUserPairs[username]));
     socket.emit("usersStatus", await getUserStatus(allUserPairs[username]));
     setInterval(async () => {
       socket.emit("usersStatus", await getUserStatus(allUserPairs[username]));
@@ -210,9 +202,9 @@ io.on("connection", (socket) => {
 
   socket.on("chat message", (message, user) => {
     let tmpUser = users.find((user) => user.socket.id === socket.id);
-    if (tmpUser.status === 0) {
-      return;
-    }
+    // if (tmpUser.status === 0) {
+    //   return;
+    // }
     if (messages[room]) {
       messages[room].push({
         username: user,
@@ -232,15 +224,25 @@ io.on("connection", (socket) => {
       socket.to(currentPair[username].socket.id).emit("accept pair");
       socket.emit("accept pair");
     }
-    socket
-      .to(currentPair[username].socket.id)
-      .emit("chat message", user, message);
+    currentPair[username]
+      ? socket
+          .to(currentPair[username].socket.id)
+          .emit("chat message", user, message)
+      : "";
   });
 
   socket.on("get pair", (nickname) => {
-    const userToPair = users.find((user) => user.username === nickname);
-    if (userToPair) socket.to(userToPair.socket.id).emit("accept conversation", username);
+    const currentUser = users.find((user) => user.username === username);
+    if (currentUser && !currentPair[username]) {
+      console.log("asd");
+
+      const userToPair = users.find((user) => user.username === nickname);
+      if (userToPair && !currentPair[userToPair.username])
+        socket.to(userToPair.socket.id).emit("accept conversation", username, userToPair.username);
+      else socket.emit("user in conversation");
+    }
   });
+
   socket.on("accepted conversation", (nickname) => {
     const currentUser = users.find((user) => user.socket.id === socket.id);
     const userToPair = users.find((user) => user.username === nickname);
@@ -280,6 +282,17 @@ io.on("connection", (socket) => {
     if (!result) {
       socket.emit("end chat");
       socket.to(currentPair[username].socket.id).emit("end chat");
+      const currentUser = users.find((user) => user.socket.id === socket.id);
+
+      previousPair[username] = currentPair[username];
+      previousPair[currentPair[username].username] = currentUser;
+
+      acceptsPair[currentPair[username].username] = null;
+      acceptsPair[username] = null;
+      
+      currentPair[currentPair[username].username] = null;
+      currentPair[username] = null;
+
       console.log("not paired");
     } else if (result && acceptsPair[currentPair[nickname].username]) {
       console.log("paired");
@@ -315,9 +328,9 @@ io.on("connection", (socket) => {
       `${new Date().toLocaleDateString()} ${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}`
     );
 
-    let tmpUser = users.find((user) => user.socket.id === socket.id);
     if (currentPair[username]) {
       socket.to(currentPair[username].socket.id).emit("user disconnected");
+      currentPair[currentPair[username].username] = null;
       saveMessagesToDB(
         username,
         messages[room],
@@ -326,7 +339,6 @@ io.on("connection", (socket) => {
       );
       // acceptsPair[currentPair[username].socket.username] = null;
     }
-    // console.log(user_pairs);
     // saveMessagesToDB(currentPair[username], messages[room], room, username);
     previousPair[username] = currentPair[username];
     acceptsPair[username] = null;
@@ -334,6 +346,6 @@ io.on("connection", (socket) => {
     users = users.filter((user) => user.socket.id != socket.id);
   });
 });
-http.listen(3000, () => {
-  console.log("listening on *:3000");
+http.listen(port, () => {
+  console.log(`listening on *:${port}`);
 });

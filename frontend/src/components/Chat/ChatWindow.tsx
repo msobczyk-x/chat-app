@@ -33,9 +33,38 @@ const ChatWindow = () => {
     setWaitingForAccept(true);
   }
 
+  const userInConvoModala = () => {
+    let secondsToGo = 1;
+    const modal = Modal.info({
+      centered: true,
+      icon: <LikeOutlined />,
+      title: "User is already in a conversation",
+      footer: null,
+      onCancel() {
+        setUserInConvoModal(false);
+      },
+      afterClose() {
+        setUserInConvoModal(false);
+      }
+    });
+    const timer = setInterval(() => {
+      secondsToGo -= 1;
+     
+    }, 1000);
+  
+    setTimeout(() => {
+      clearInterval(timer);
+      modal.destroy();
+      
+    }, secondsToGo * 1000);
+  };
+
+
   const countDown = (strangerUsername: string) => {
     let secondsToGo = 5;
   
+
+
     const modal = Modal.info({
       centered: true,
       icon: <LikeOutlined />,
@@ -78,6 +107,8 @@ const ChatWindow = () => {
     }, secondsToGo * 1000);
   };
 
+
+  const [userInConvoModal, setUserInConvoModal] = useState(false);
   const [modal2Open, setModal2Open] = useState(false);
   let newRoom: string;
   const [isConnected, setIsConnected] = useState(false);
@@ -103,9 +134,14 @@ const ChatWindow = () => {
       setWaitingForAccept(false);
     });
 
-    sc.on("accept conversation", (username) => {
+    sc.on("user in conversation", () => {
+      console.log("user in conversation");
+      userInConvoModala();
+      });
 
-      countDown(username);
+    sc.on("accept conversation", (strangerUsername, senderUsername) => {
+
+      countDown(strangerUsername);
     });
     // sc.on("id", (id) => {
     //   localStorage.setItem("socketId", id);
@@ -172,6 +208,7 @@ const ChatWindow = () => {
       sc.off("username registered");
       sc.off("bothAccepted");
       sc.off("accept conversation");
+      sc.off("user in conversation");
     };
   }, []);
 
@@ -269,8 +306,8 @@ const ChatWindow = () => {
           ),
           Matched: (
             <div className="w-full h-full">
-              <div className="title font-sans font-bold text-md text-left pl-5 pt-5 justify-between flex flex-col items-center sm:flex-row">
-                <p className="text-2xl pb-4 md:pb-0 self-start ">Chat</p>
+              <div className="title font-sans font-bold text-md text-left pl-5 pt-5 justify-between flex flex-col items-center sm:flex-row ">
+                <p className="text-2xl md:pb-0 self-start ">Chat</p>
                 <div className="flex flex-row items-center justify-center ">
                   <div className=" text-md font-semibold">Shared hobbies:</div>
                   
