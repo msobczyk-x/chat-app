@@ -138,12 +138,19 @@ const getUser = async function (req, res) {
 };
 
 const getUserChats = async function (req, res) {
-  const username = req.body.username;
+  const username = req.params.username;
+  const pair = req.params.pair;
   const data = await ChatRoom.find({ username: username });
+  let messages = [];
+  // roomMessages = data.pair;
 
-  roomMessages = data;
+  for (let el of data[0].roomMessages) {
+    if (el.pair === pair) {
+      messages = el.messages;
+    }
+  }
   if (data) {
-    res.status(200).json({ roomMessages });
+    res.status(200).json(messages);
   } else {
     res.status(400).json({ message: "no user found" });
   }

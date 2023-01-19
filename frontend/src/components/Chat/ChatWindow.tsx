@@ -35,7 +35,7 @@ const ChatWindow = () => {
 
 
 const notAcceptedModal = () => {
-    let secondsToGo = 1;
+    let secondsToGo = 2;
     const modal = Modal.error({
       centered: true,
       icon: <DislikeOutlined />,
@@ -63,7 +63,7 @@ const notAcceptedModal = () => {
 
 
   const userInConvoModala = () => {
-    let secondsToGo = 1;
+    let secondsToGo = 2;
     const modal = Modal.info({
       centered: true,
       icon: <LikeOutlined />,
@@ -108,15 +108,13 @@ const notAcceptedModal = () => {
       cancelText: "Cancel",
       okText: "Accept",
       okType: "default",
-      onCancel() {
-        sc.emit("not accepted conversation", strangerUsername);
-      },
+  
       onOk() {
         sc.emit("accepted conversation", strangerUsername);
       },
       afterClose() {
         sc.emit("not accepted conversation", strangerUsername);
-      },
+      }
         
 
 
@@ -169,7 +167,7 @@ const notAcceptedModal = () => {
       });
 
     sc.on("accept conversation", (strangerUsername, senderUsername) => {
-
+        setStrangerUsername(senderUsername);
       countDown(strangerUsername);
     });
     // sc.on("id", (id) => {
@@ -198,23 +196,33 @@ const notAcceptedModal = () => {
       ];
     };
 
-    sc.on("match", (room, userHobby, strangerHobby) => {
+    sc.on("match", (room, userHobby, strangerHobby, strangerUsername) => {
       console.log(room);
       newRoom = room;
+     console.log(strangerUsername);
+      axios.get(`http://localhost:3000/api/getUserChats/${username}/${strangerUsername}`).then((res) => {
+        console.log(res.data);
+        setUserMessages(res.data);
+      })
+    
       setIsConnected(true);
+        
       setStatus("Matched");
       setSharedHobbies(filterHobbies(userHobby, strangerHobby));
-
       sc.emit("join room", newRoom, (response: string) => {
         console.log(response);
         console.log(status);
-        setStatus("Matched");
+        setIsConnected(true);
+        
+      setStatus("Matched");
       });
     });
 
     sc.on("accepted conversation", (strangerUsername) => {
+      console.log("accepted conversation", strangerUsername);
+      setStrangerUsername(strangerUsername);
       console.log("accepted conversation");
-      setStatus("Matched");
+
       });
 
     sc.on("user disconnected", () => {
@@ -233,10 +241,10 @@ const notAcceptedModal = () => {
       setStatus("Matched");
       console.log("both accepted");
     });
+
     sc.on("pair not accepted",
     () => {
       notAcceptedModal();
-      setStatus("Connected");
     }
     )
     sc.on("waiting for accept from pair", strangerUsername => {
@@ -282,14 +290,23 @@ const notAcceptedModal = () => {
     createMessage(messageValue, username);
     setMessageValue("");
   };
+
   useEffect(() => {
+    
     if (messageEl.current) {
+      messageEl.current.scrollTo({
+        left: messageEl.current.scrollWidth,
+    top: messageEl.current.scrollHeight,
+    behavior: 'smooth'
+      })
+      
       messageEl.current.addEventListener("DOMNodeInserted", (event: Event) => {
         const target = event.currentTarget as HTMLDivElement;
         target.scroll({ top: target.scrollHeight, behavior: "smooth" });
       });
     }
-  }, []);
+  }, [userMessages]);
+
   useEffect(() => {
     socket.on("chat message", (username, message) => {
       createMessage(message, username);
