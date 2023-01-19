@@ -6,7 +6,7 @@ import { faL } from "@fortawesome/free-solid-svg-icons";
 import TextTransition, { presets } from "react-text-transition";
 import { Modal } from "antd";
 import { Progress } from "antd";
-import { LikeOutlined, DislikeOutlined } from "@ant-design/icons";
+import { LikeOutlined, DislikeOutlined, CloseOutlined } from "@ant-design/icons";
 import { Button } from "antd";
 import HobbyButton from "./HobbyButton";
 type Message = {
@@ -143,6 +143,16 @@ const notAcceptedModal = () => {
   const [socketID, setSocketID] = useState<any>(
     localStorage.getItem("socketId")
   );
+    const emitLeave = () => {
+      setIsConnected(false);
+      setStatus("Connected");
+      setUserMessages([]);
+      setStrangerUsername("");
+      setSharedHobbies([]);
+      setWaitingForAccept(false);
+ 
+    sc.emit("leave room", newRoom);
+  };
 
   useEffect(() => {
     setSocketID(localStorage.getItem("socketId"));
@@ -167,7 +177,7 @@ const notAcceptedModal = () => {
       });
 
     sc.on("accept conversation", (strangerUsername, senderUsername) => {
-        setStrangerUsername(senderUsername);
+        setStrangerUsername(strangerUsername);
       countDown(strangerUsername);
     });
     // sc.on("id", (id) => {
@@ -199,11 +209,13 @@ const notAcceptedModal = () => {
     sc.on("match", (room, userHobby, strangerHobby, strangerUsername) => {
       console.log(room);
       newRoom = room;
-     console.log(strangerUsername);
+   
+     console.log("match",strangerUsername);
       axios.get(`http://localhost:3000/api/getUserChats/${username}/${strangerUsername}`).then((res) => {
         console.log(res.data);
         setUserMessages(res.data);
       })
+    
     
       setIsConnected(true);
         
@@ -376,6 +388,7 @@ const notAcceptedModal = () => {
           Matched: (
             <div className="w-full h-full">
               <div className="title font-sans font-bold text-md text-left pl-5 pt-5 justify-between flex flex-row items-center ">
+                <Button type="text" icon={<CloseOutlined />} onClick={emitLeave}/>
                 <p className="text-2xl md:pb-0 self-start ">Chat</p>
                 <div className="flex flex-row items-center justify-center ">
                   <div className=" text-md font-semibold hidden md:block">Shared hobbies:</div>

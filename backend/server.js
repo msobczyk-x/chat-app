@@ -257,8 +257,8 @@ io.on("connection", (socket) => {
       "match",
       `${userToPair.socket.id} ${socket.id}`,
       currentUser.hobby,
-      userToPair.hobby
-      ,userToPair.username
+      userToPair.hobby,
+      userToPair.username
     );
     socket
       .to(userToPair.socket.id)
@@ -266,8 +266,8 @@ io.on("connection", (socket) => {
         "match",
         `${userToPair.socket.id} ${socket.id}`,
         currentUser.hobby,
-        userToPair.hobby
-        ,userToPair.username
+        userToPair.hobby,
+        currentUser.username
       );
     users.forEach((user) => {
       if (
