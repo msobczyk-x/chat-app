@@ -251,7 +251,7 @@ io.on("connection", (socket) => {
       userToPair.hobby
     );
     socket
-      .to(best.socket.id)
+      .to(userToPair.socket.id)
       .emit(
         "match",
         `${userToPair.socket.id} ${socket.id}`,
