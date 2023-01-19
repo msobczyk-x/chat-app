@@ -238,12 +238,15 @@ io.on("connection", (socket) => {
   });
 
   socket.on("get pair", (nickname) => {
+    const userToPair = users.find((user) => user.username === nickname);
+    socket.to(userToPair.socket.id).emit("accept conversation");
+  });
+  socket.on("accepted conversation", (nickname) => {
     const currentUser = users.find((user) => user.socket.id === socket.id);
     const userToPair = users.find((user) => user.username === nickname);
-
-    socket;
     currentPair[currentUser.username] = userToPair;
     currentPair[userToPair.username] = currentUser;
+
     socket.emit(
       "match",
       `${userToPair.socket.id} ${socket.id}`,
@@ -266,6 +269,9 @@ io.on("connection", (socket) => {
         user.status = 1;
       }
     });
+  });
+  socket.on("not accepted conversation", (nickname) => {
+    socket.emit("pair not accepted");
   });
 
   socket.on("accept result", (nickname, result) => {
