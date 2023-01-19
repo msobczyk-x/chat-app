@@ -6,7 +6,7 @@ import { faL } from "@fortawesome/free-solid-svg-icons";
 import TextTransition, { presets } from "react-text-transition";
 import { Modal } from "antd";
 import { Progress } from "antd";
-import { LikeOutlined } from "@ant-design/icons";
+import { LikeOutlined, DislikeOutlined } from "@ant-design/icons";
 import { Button } from "antd";
 import HobbyButton from "./HobbyButton";
 type Message = {
@@ -32,6 +32,35 @@ const ChatWindow = () => {
     sc.emit("accept result", username, result);
     setWaitingForAccept(true);
   }
+
+
+const notAcceptedModal = () => {
+    let secondsToGo = 1;
+    const modal = Modal.error({
+      centered: true,
+      icon: <DislikeOutlined />,
+      title: "User did not accept your request",
+      footer: null,
+      onCancel() {
+        setStatus("Connected");
+      },
+      afterClose() {
+        setStatus("Connected");
+      }
+    });
+    const timer = setInterval(() => {
+      secondsToGo -= 1;
+     
+    }, 1000);
+  
+    setTimeout(() => {
+      clearInterval(timer);
+      modal.destroy();
+      
+    }, secondsToGo * 1000);
+}
+
+
 
   const userInConvoModala = () => {
     let secondsToGo = 1;
@@ -80,13 +109,13 @@ const ChatWindow = () => {
       okText: "Accept",
       okType: "default",
       onCancel() {
-        sc.emit("not accept conversation", username);
+        sc.emit("not accepted conversation", username);
       },
       onOk() {
-        sc.emit("accepted conversation", username);
+        sc.emit("accepted conversation", strangerUsername);
       },
       afterClose() {
-        sc.emit("not accept conversation", username);
+        sc.emit("not accepted conversation", username);
       },
         
 
@@ -150,11 +179,14 @@ const ChatWindow = () => {
     // sc.on("tryAgain",()=>{
     //   sc.emit("register username", username);
     // })
-    if (status === "LookingForPair") {
+     
       sc.on("tryAgain", () => {
-        sc.emit("tryToFindMatch");
+        if (status === "LookingForPair"){
+          sc.emit("tryToFindMatch");
+        }
+        
       });
-    }
+    
 
     const filterHobbies = (hobbies: string[], hobbies2: string[]) => {
       return [
@@ -180,6 +212,11 @@ const ChatWindow = () => {
       });
     });
 
+    sc.on("accepted conversation", (strangerUsername) => {
+      console.log("accepted conversation");
+      setStatus("Matched");
+      });
+
     sc.on("user disconnected", () => {
       console.log("user disconnected");
       setStatus("Disconnected");
@@ -196,6 +233,17 @@ const ChatWindow = () => {
       setStatus("Matched");
       console.log("both accepted");
     });
+    sc.on("pair not accepted",
+    () => {
+      notAcceptedModal();
+      setStatus("Connected");
+    }
+    )
+    sc.on("waiting for accept from pair", strangerUsername => {
+      console.log("waiting for accept from pair");
+      setStatus("WaitingForAcceptFromPair");
+    }
+    )
     return () => {
       sc.off("connection");
       sc.off("left room");
@@ -209,6 +257,8 @@ const ChatWindow = () => {
       sc.off("bothAccepted");
       sc.off("accept conversation");
       sc.off("user in conversation");
+      sc.off("accepted conversation");
+      sc.off("pair not accepted");
     };
   }, []);
 
@@ -306,10 +356,10 @@ const ChatWindow = () => {
           ),
           Matched: (
             <div className="w-full h-full">
-              <div className="title font-sans font-bold text-md text-left pl-5 pt-5 justify-between flex flex-col items-center sm:flex-row ">
+              <div className="title font-sans font-bold text-md text-left pl-5 pt-5 justify-between flex flex-row items-center ">
                 <p className="text-2xl md:pb-0 self-start ">Chat</p>
                 <div className="flex flex-row items-center justify-center ">
-                  <div className=" text-md font-semibold">Shared hobbies:</div>
+                  <div className=" text-md font-semibold hidden md:block">Shared hobbies:</div>
                   
                   {sharedHobbies.length > 0 && sharedHobbies[0].map((hobby: any, index: any) => (
                   <div key={index}
@@ -393,6 +443,9 @@ const ChatWindow = () => {
                 {TEXTS[index % TEXTS.length]}
               </TextTransition>
             </div>
+          ),
+          WaitingForAcceptFromPair: (
+            <Spinner className="" text="Waiting for acceptation" />
           ),
           Disconnected: (
             <div className="w-full h-full items-center justify-center font-bold flex flex-col flex-wrap backdrop-blur-lg p-0 m-0 text-[3rem]">
