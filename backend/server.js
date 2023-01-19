@@ -274,8 +274,11 @@ io.on("connection", (socket) => {
       }
     });
   });
+
   socket.on("not accepted conversation", (nickname) => {
-    socket.emit("pair not accepted");
+    const tmpUser = users.find((user) => user.username === nickname);
+
+    socket.to(tmpUser.socket.id).emit("pair not accepted");
   });
  
   socket.on("accept result", (nickname, result) => {

@@ -109,13 +109,13 @@ const notAcceptedModal = () => {
       okText: "Accept",
       okType: "default",
       onCancel() {
-        sc.emit("not accepted conversation", username);
+        sc.emit("not accepted conversation", strangerUsername);
       },
       onOk() {
         sc.emit("accepted conversation", strangerUsername);
       },
       afterClose() {
-        sc.emit("not accepted conversation", username);
+        sc.emit("not accepted conversation", strangerUsername);
       },
         
 
@@ -259,6 +259,8 @@ const notAcceptedModal = () => {
       sc.off("user in conversation");
       sc.off("accepted conversation");
       sc.off("pair not accepted");
+      sc.off("waiting for accept from pair");
+
     };
   }, []);
 
