@@ -6,7 +6,7 @@ import { faL } from "@fortawesome/free-solid-svg-icons";
 import TextTransition, { presets } from "react-text-transition";
 import { Modal } from "antd";
 import { Progress } from "antd";
-import { LikeOutlined, DislikeOutlined } from "@ant-design/icons";
+import { LikeOutlined, DislikeOutlined, CloseOutlined } from "@ant-design/icons";
 import { Button } from "antd";
 import HobbyButton from "./HobbyButton";
 type Message = {
@@ -35,7 +35,7 @@ const ChatWindow = () => {
 
 
 const notAcceptedModal = () => {
-    let secondsToGo = 1;
+    let secondsToGo = 2;
     const modal = Modal.error({
       centered: true,
       icon: <DislikeOutlined />,
@@ -63,7 +63,7 @@ const notAcceptedModal = () => {
 
 
   const userInConvoModala = () => {
-    let secondsToGo = 1;
+    let secondsToGo = 2;
     const modal = Modal.info({
       centered: true,
       icon: <LikeOutlined />,
@@ -108,15 +108,13 @@ const notAcceptedModal = () => {
       cancelText: "Cancel",
       okText: "Accept",
       okType: "default",
-      onCancel() {
-        sc.emit("not accepted conversation", username);
-      },
+  
       onOk() {
         sc.emit("accepted conversation", strangerUsername);
       },
       afterClose() {
         sc.emit("not accepted conversation", strangerUsername);
-      },
+      }
         
 
 
@@ -145,6 +143,16 @@ const notAcceptedModal = () => {
   const [socketID, setSocketID] = useState<any>(
     localStorage.getItem("socketId")
   );
+    const emitLeave = () => {
+      setIsConnected(false);
+      setStatus("Connected");
+      setUserMessages([]);
+      setStrangerUsername("");
+      setSharedHobbies([]);
+      setWaitingForAccept(false);
+ 
+    sc.emit("leave room", newRoom);
+  };
 
   useEffect(() => {
     setSocketID(localStorage.getItem("socketId"));
@@ -157,6 +165,9 @@ const notAcceptedModal = () => {
     sc.on("connection", () => {
       sc.emit("findMatch");
     });
+    sc.on("left room",()=>{
+      sc.emit("leave room", newRoom);
+    })
     sc.on("accept pair", () => {
       console.log("accept pair");
       setStatus("AcceptionStatus");
@@ -169,7 +180,7 @@ const notAcceptedModal = () => {
       });
 
     sc.on("accept conversation", (strangerUsername, senderUsername) => {
-
+        setStrangerUsername(strangerUsername);
       countDown(strangerUsername);
     });
     // sc.on("id", (id) => {
@@ -180,12 +191,10 @@ const notAcceptedModal = () => {
     //   sc.emit("register username", username);
     // })
      
-      sc.on("tryAgain", () => {
-        if (status === "LookingForPair"){
-          sc.emit("tryToFindMatch");
-        }
-        
-      });
+    sc.on("tryAgain", () => {
+        sc.emit("tryToFindMatch");
+      }
+    )
     
 
     const filterHobbies = (hobbies: string[], hobbies2: string[]) => {
@@ -198,23 +207,35 @@ const notAcceptedModal = () => {
       ];
     };
 
-    sc.on("match", (room, userHobby, strangerHobby) => {
+    sc.on("match", (room, userHobby, strangerHobby, strangerUsername) => {
       console.log(room);
       newRoom = room;
+   
+     console.log("match",strangerUsername);
+      axios.get(`http://localhost:3000/api/getUserChats/${username}/${strangerUsername}`).then((res) => {
+        console.log(res.data);
+        setUserMessages(res.data);
+      })
+    
+    
       setIsConnected(true);
+        
       setStatus("Matched");
       setSharedHobbies(filterHobbies(userHobby, strangerHobby));
-
       sc.emit("join room", newRoom, (response: string) => {
         console.log(response);
         console.log(status);
-        setStatus("Matched");
+        setIsConnected(true);
+        
+      setStatus("Matched");
       });
     });
 
     sc.on("accepted conversation", (strangerUsername) => {
+      console.log("accepted conversation", strangerUsername);
+      setStrangerUsername(strangerUsername);
       console.log("accepted conversation");
-      setStatus("Matched");
+
       });
 
     sc.on("user disconnected", () => {
@@ -233,10 +254,10 @@ const notAcceptedModal = () => {
       setStatus("Matched");
       console.log("both accepted");
     });
+
     sc.on("pair not accepted",
     () => {
       notAcceptedModal();
-      setStatus("Connected");
     }
     )
     sc.on("waiting for accept from pair", strangerUsername => {
@@ -259,6 +280,8 @@ const notAcceptedModal = () => {
       sc.off("user in conversation");
       sc.off("accepted conversation");
       sc.off("pair not accepted");
+      sc.off("waiting for accept from pair");
+
     };
   }, []);
 
@@ -280,14 +303,23 @@ const notAcceptedModal = () => {
     createMessage(messageValue, username);
     setMessageValue("");
   };
+
   useEffect(() => {
+    
     if (messageEl.current) {
+      messageEl.current.scrollTo({
+        left: messageEl.current.scrollWidth,
+    top: messageEl.current.scrollHeight,
+    behavior: 'smooth'
+      })
+      
       messageEl.current.addEventListener("DOMNodeInserted", (event: Event) => {
         const target = event.currentTarget as HTMLDivElement;
         target.scroll({ top: target.scrollHeight, behavior: "smooth" });
       });
     }
-  }, []);
+  }, [userMessages]);
+
   useEffect(() => {
     socket.on("chat message", (username, message) => {
       createMessage(message, username);
@@ -357,6 +389,7 @@ const notAcceptedModal = () => {
           Matched: (
             <div className="w-full h-full">
               <div className="title font-sans font-bold text-md text-left pl-5 pt-5 justify-between flex flex-row items-center ">
+                <Button type="text" icon={<CloseOutlined />} onClick={emitLeave}/>
                 <p className="text-2xl md:pb-0 self-start ">Chat</p>
                 <div className="flex flex-row items-center justify-center ">
                   <div className=" text-md font-semibold hidden md:block">Shared hobbies:</div>

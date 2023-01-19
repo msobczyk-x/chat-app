@@ -255,7 +255,8 @@ io.on("connection", (socket) => {
       "match",
       `${userToPair.socket.id} ${socket.id}`,
       currentUser.hobby,
-      userToPair.hobby
+      userToPair.hobby,
+      userToPair.username
     );
     socket
       .to(userToPair.socket.id)
@@ -263,7 +264,8 @@ io.on("connection", (socket) => {
         "match",
         `${userToPair.socket.id} ${socket.id}`,
         currentUser.hobby,
-        userToPair.hobby
+        userToPair.hobby,
+        currentUser.username
       );
     users.forEach((user) => {
       if (
@@ -276,8 +278,8 @@ io.on("connection", (socket) => {
   });
   socket.on("not accepted conversation", (nickname) => {
     const tmpUser = users.find((user) => user.username === nickname);
-
-    socket.to(tmpUser.socket.id).emit("pair not accepted");
+    if (tmpUser && !currentPair[username])
+      socket.to(tmpUser.socket.id).emit("pair not accepted");
   });
 
   socket.on("accept result", (nickname, result) => {
@@ -324,7 +326,26 @@ io.on("connection", (socket) => {
     room = newRoom;
     // sendMessage(`Joined room:'${room}'`);
   });
+  socket.on("leave room", () => {
+    if (currentPair[username]) {
+      socket.to(currentPair[username].socket.id).emit("user disconnected");
+      socket.to(currentPair[username].socket.id).emit("left room");
+      previousPair[username] = currentPair[username];
 
+      acceptsPair[username] = null;
+      saveMessagesToDB(
+        username,
+        messages[room],
+        room,
+        currentPair[username].username
+      );
+      currentPair[username] = null;
+    }
+    // if (previousPair[currentPair[username]]) {
+    //   previousPair[currentPair[username].username] = currentPair[username];
+    //   currentPair[currentPair[username].username] = null;
+    // }
+  });
   socket.on("disconnect", function () {
     console.log("user disconnected");
     saveUserStatus(
