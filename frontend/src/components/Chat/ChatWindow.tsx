@@ -4,11 +4,17 @@ import Spinner from "../../components/Spinner/Spinner";
 import { SocketContext, sc } from "../../context/socket";
 import { faL } from "@fortawesome/free-solid-svg-icons";
 import TextTransition, { presets } from "react-text-transition";
-
+import { Modal } from "antd";
+import { Progress } from "antd";
+import { LikeOutlined } from "@ant-design/icons";
+import { Button } from "antd";
+import HobbyButton from "./HobbyButton";
 type Message = {
   username: string;
   message: string;
 };
+
+
 
 const ChatWindow = () => {
   const messageEl = useRef<HTMLDivElement>(null);
@@ -21,19 +27,64 @@ const ChatWindow = () => {
   const [strangerUsername, setStrangerUsername] = useState("");
   const [status, setStatus] = useState("Connected");
 
+
   function sendEmit(result: boolean) {
     sc.emit("accept result", username, result);
     setWaitingForAccept(true);
   }
 
+  const countDown = (strangerUsername: string) => {
+    let secondsToGo = 5;
+  
+    const modal = Modal.info({
+      centered: true,
+      icon: <LikeOutlined />,
+      title: `${strangerUsername} wants to talk to you !`,
+      content: (
+        <div>
+          <p>You have {secondsToGo} seconds left to accept.</p>
+        </div>
+  
+      ),
+      
+      cancelText: "Cancel",
+      okText: "Accept",
+      okType: "default",
+      onCancel() {
+        sc.emit("not accept conversation", username);
+      },
+      onOk() {
+        sc.emit("accepted conversation", username);
+      },
+      afterClose() {
+        sc.emit("not accept conversation", username);
+      },
+        
+
+
+    });
+  
+    const timer = setInterval(() => {
+      secondsToGo -= 1;
+      modal.update({
+        content: `You have ${secondsToGo} seconds left to accept.`,
+      });
+    }, 1000);
+  
+    setTimeout(() => {
+      clearInterval(timer);
+      modal.destroy();
+      
+    }, secondsToGo * 1000);
+  };
+
+  const [modal2Open, setModal2Open] = useState(false);
   let newRoom: string;
   const [isConnected, setIsConnected] = useState(false);
   const [result, setResult] = useState(false);
   const [socketID, setSocketID] = useState<any>(
     localStorage.getItem("socketId")
   );
-
- 
 
   useEffect(() => {
     setSocketID(localStorage.getItem("socketId"));
@@ -51,6 +102,11 @@ const ChatWindow = () => {
       setStatus("AcceptionStatus");
       setWaitingForAccept(false);
     });
+
+    sc.on("accept conversation", (username) => {
+
+      countDown(username);
+    });
     // sc.on("id", (id) => {
     //   localStorage.setItem("socketId", id);
     // });
@@ -64,14 +120,13 @@ const ChatWindow = () => {
       });
     }
 
-
     const filterHobbies = (hobbies: string[], hobbies2: string[]) => {
       return [
         ...new Array(
           hobbies.filter((item) => {
             return hobbies2.includes(item);
           })
-        ).slice(0,3),
+        ).slice(0, 3),
       ];
     };
 
@@ -81,6 +136,7 @@ const ChatWindow = () => {
       setIsConnected(true);
       setStatus("Matched");
       setSharedHobbies(filterHobbies(userHobby, strangerHobby));
+
       sc.emit("join room", newRoom, (response: string) => {
         console.log(response);
         console.log(status);
@@ -115,6 +171,7 @@ const ChatWindow = () => {
       sc.off("connected");
       sc.off("username registered");
       sc.off("bothAccepted");
+      sc.off("accept conversation");
     };
   }, []);
 
@@ -147,7 +204,7 @@ const ChatWindow = () => {
   useEffect(() => {
     socket.on("chat message", (username, message) => {
       createMessage(message, username);
-      
+
       console.log(`${username}: ${message}`);
     });
     return () => {
@@ -183,6 +240,8 @@ const ChatWindow = () => {
       className="ChatWindow w-full h-full rounded backdrop-blur bg-slate-200 flex items-center justify-center"
       id="ChatWindow"
     >
+   
+      
       {
         {
           Connected: (
@@ -210,23 +269,22 @@ const ChatWindow = () => {
           ),
           Matched: (
             <div className="w-full h-full">
-              <div className="title font-sans font-bold text-md text-left pl-5 pt-5 justify-between flex flex-row items-center">
-                <p className="text-2xl">Chat</p>
-                <div className="flex flex-row items-center justify-center">
-                <div className=" text-md font-semibold">Shared hobbies:</div>
-                {sharedHobbies.map((hobby: any) => (
+              <div className="title font-sans font-bold text-md text-left pl-5 pt-5 justify-between flex flex-col items-center sm:flex-row">
+                <p className="text-2xl pb-4 md:pb-0 self-start ">Chat</p>
+                <div className="flex flex-row items-center justify-center ">
+                  <div className=" text-md font-semibold">Shared hobbies:</div>
                   
-                <div
+                  {sharedHobbies.length > 0 && sharedHobbies[0].map((hobby: any, index: any) => (
+                  <div key={index}
                   className={`px-2 py-1 rounded-full border-2 mx-2 border-red-400 font-semibold text-sm
-          bg-red-400 text-white`}
-
+      bg-red-400 text-white`}
                 >
                   {hobby}
+                </div>)
+                  )}
+                  </div>
                 </div>
-                ))}
-               
-                </div>
-              </div>
+             
               <div className="chat-window flex flex-col items-center w-full h-full">
                 <div
                   ref={messageEl}

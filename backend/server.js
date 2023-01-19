@@ -239,7 +239,7 @@ io.on("connection", (socket) => {
 
   socket.on("get pair", (nickname) => {
     const userToPair = users.find((user) => user.username === nickname);
-    socket.to(userToPair.socket.id).emit("accept conversation");
+    if (userToPair) socket.to(userToPair.socket.id).emit("accept conversation", username);
   });
   socket.on("accepted conversation", (nickname) => {
     const currentUser = users.find((user) => user.socket.id === socket.id);

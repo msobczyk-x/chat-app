@@ -58,6 +58,8 @@ const MyChats = (props: any) => {
     sc.on("usersStatus", (response) => {
       setFilteredActiveList(filterActivePairs(response));
       setFilteredOfflineList(filterOfflinePairs(response));
+      
+    
     });
     return () => {
       sc.off("usersStatus");
@@ -66,6 +68,7 @@ const MyChats = (props: any) => {
   }, [activeList]);
 
   const setChatWith = (username: string) => {
+    console.log("setChatWith", username);
     sc.emit("get pair", username);
   }
   const variants = {
@@ -114,20 +117,25 @@ const MyChats = (props: any) => {
           </button>
         ))}
 
-        {filteredOfflineList.map((item: any, key: any) => (
+        {filteredOfflineList.map((item: any, key: any) => {
+          let user = Object.keys(item)[0];
+          let date = Object.values(item)[0];
+          return (
           
             <button key={key}
-            className="chat-item flex flex-row justify-between items-center w-full p-2 bg-slate-100"
+            className="chat-item flex flex-row justify-between items-center w-full p-2 bg-slate-200"
             disabled
           >
             <div className="chat-status pl-5 ">
               <span className="dot"></span>
             </div>
-            <div className="chat-name p-3 font-semibold">{item.key}</div>
-            <div className="time text-sm">{calculateTime(item.value)}</div>
+            <div className="chat-name p-3 font-semibold">{user}</div>
+            <div className="time text-sm">{calculateTime(date)}</div>
           </button>
-          ))
-          }
+          )})
+          
+
+        }
           
  
       </motion.div>
