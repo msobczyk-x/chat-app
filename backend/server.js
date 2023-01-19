@@ -240,21 +240,23 @@ io.on("connection", (socket) => {
   socket.on("get pair", (nickname) => {
     const currentUser = users.find((user) => user.socket.id === socket.id);
     const userToPair = users.find((user) => user.username === nickname);
+
+    socket;
     currentPair[currentUser.username] = userToPair;
     currentPair[userToPair.username] = currentUser;
     socket.emit(
       "match",
       `${userToPair.socket.id} ${socket.id}`,
-      userHobby.hobby,
-      best.hobby
+      currentUser.hobby,
+      userToPair.hobby
     );
     socket
       .to(best.socket.id)
       .emit(
         "match",
         `${userToPair.socket.id} ${socket.id}`,
-        userHobby.hobby,
-        best.hobby
+        currentUser.hobby,
+        userToPair.hobby
       );
     users.forEach((user) => {
       if (
