@@ -1,4 +1,4 @@
-const { ChatRoom, userPairs } = require("../models/chatModel");
+const { ChatRoom, userPairs, userStatus } = require("../models/chatModel");
 
 const saveMessagesToDB = (username, messages, room, pair) => {
   if (pair && username !== pair) {
@@ -32,16 +32,16 @@ const saveMessagesToDB = (username, messages, room, pair) => {
   }
 };
 const saveUserPairsToDB = (username, newPairs) => {
-  if (!newPairs || newPairs[username] == null) return;
+  if (!newPairs) return;
   userPairs.findOne({ username: username }, (err, pairs) => {
     if (!pairs) {
       userPairs.create({
         username: username,
-        pairs: newPairs[username],
+        pairs: newPairs,
       });
     } else {
       let oldPairs = pairs.pairs;
-      let allPairs = oldPairs.concat(newPairs[username]);
+      let allPairs = oldPairs.concat(newPairs);
       let uniquePairs = new Set(allPairs);
       pairs.pairs = Array.from(uniquePairs);
       pairs.save((err, updated) => {
@@ -50,5 +50,40 @@ const saveUserPairsToDB = (username, newPairs) => {
     }
   });
 };
+const getUserPairs = async (username) => {
+  const data = await userPairs.find({ username: username });
+  return data[0] ? data[0].pairs : [];
+};
+const saveUserStatus = async (username, status) => {
+  userStatus.findOne({ username: username }, (err, data) => {
+    if (!data) {
+      userStatus.create({
+        username: username,
+        status: status,
+      });
+    } else {
+      data.status = status;
+      data.save((err, updated) => {
+        if (err) console.log(err);
+      });
+    }
+  });
+};
+const getUserStatus = async (usernames) => {
+  let res = [];
+  for (const user of usernames) {
+    const data = await userStatus.findOne({ username: user });
+    if (data) {
+      res.push({ [user]: data.status });
+    }
+  }
+  return res;
+};
 
-module.exports = { saveMessagesToDB, saveUserPairsToDB };
+module.exports = {
+  saveMessagesToDB,
+  saveUserPairsToDB,
+  getUserPairs,
+  getUserStatus,
+  saveUserStatus,
+};

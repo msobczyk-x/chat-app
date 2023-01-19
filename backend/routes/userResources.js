@@ -13,7 +13,7 @@ const router = express.Router();
 router.route("/saveHobby").post(saveHobby);
 router.route("/updateUser/:username").put(updateUser);
 router.route("/getUserChats").get(getUserChats);
-router.route("/getUserPairs").get(getUserPairs);
+router.route("/getUserPairs/:username").get(getUserPairs);
 router.route("/getUser/:username").get(getUser);
 router.route("/getUserHobby/:username").get(getUserHobby);
 
