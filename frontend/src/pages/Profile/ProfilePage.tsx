@@ -13,11 +13,11 @@ import { ChangeAvatar } from "./ChangeAvatar";
 import { ChangeEmail } from "./ChangeEmail";
 import { ChangePassword } from "./ChangePassword";
 import { ChangeHobby } from "./ChangeHobby";
-
+import { Avatars } from "../../components/Header/Avatars";
 const ProfilePage = () => {
   const [username, setUsername] = useState("");
   const [currentPage, setCurrentPage] = useState("profile");
-
+  const avatar = localStorage.getItem("avatar");
   useEffect(() => {
     setUsername(localStorage.getItem("username") || "");
   }, []);
@@ -29,7 +29,7 @@ const ProfilePage = () => {
     >
       <div className="w-full h-full bg-slate-200 rounded my-2 ml-2 flex flex-col md:w-1/6">
         <div className="flex flex-row items-center p-5 border-b-2 border-slate-300 bg-slate-100">
-          <Avatar size="large" icon={<UserOutlined />} />
+          <Avatars src={avatar} />
           <p className="text-lg font-bold font-sans pl-4 pt-1">
             {" "}
             Hi, {username}

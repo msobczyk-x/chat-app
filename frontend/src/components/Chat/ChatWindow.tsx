@@ -17,7 +17,7 @@ const ChatWindow = () => {
   const [userMessages, setUserMessages] = useState<Message[]>([]);
   const [messageValue, setMessageValue] = useState("");
   const [waitingForAccept, setWaitingForAccept] = useState(false);
-  const [sharedHobbies, setSharedHobbies] = useState<string[]>([] as any);
+  const [sharedHobbies, setSharedHobbies] = useState<any>([] as any);
   const [strangerUsername, setStrangerUsername] = useState("");
   const [status, setStatus] = useState("Connected");
 
@@ -33,18 +33,7 @@ const ChatWindow = () => {
     localStorage.getItem("socketId")
   );
 
-  const fetchHobby = () => {
-    let userHobbies:any = [];
-    let strangerHobbies:any = [];
-    axios.get(`http://localhost:3000/api/getUserHobby/${username}`).then((response) => {
-      userHobbies = response.data.data[0].hobbies;
-    });
-    axios.get(`http://localhost:3000/api/getUserHobby/${strangerUsername}`).then((response) => {
-      strangerHobbies = response.data.data[0].hobbies;
-      
-    });
-    return userHobbies.filter((hobby:any) => strangerHobbies.includes(hobby));
-  }
+ 
 
   useEffect(() => {
     setSocketID(localStorage.getItem("socketId"));
@@ -76,13 +65,22 @@ const ChatWindow = () => {
     }
 
 
-    sc.on("match", (room, username) => {
+    const filterHobbies = (hobbies: string[], hobbies2: string[]) => {
+      return [
+        ...new Array(
+          hobbies.filter((item) => {
+            return hobbies2.includes(item);
+          })
+        ).slice(0,3),
+      ];
+    };
+
+    sc.on("match", (room, userHobby, strangerHobby) => {
       console.log(room);
       newRoom = room;
       setIsConnected(true);
       setStatus("Matched");
-      /* setStrangerUsername(username);
-      setSharedHobbies(fetchHobby()); */
+      setSharedHobbies(filterHobbies(userHobby, strangerHobby));
       sc.emit("join room", newRoom, (response: string) => {
         console.log(response);
         console.log(status);
@@ -216,27 +214,17 @@ const ChatWindow = () => {
                 <p className="text-2xl">Chat</p>
                 <div className="flex flex-row items-center justify-center">
                 <div className=" text-md font-semibold">Shared hobbies:</div>
+                {sharedHobbies.map((hobby: any) => (
+                  
                 <div
                   className={`px-2 py-1 rounded-full border-2 mx-2 border-red-400 font-semibold text-sm
           bg-red-400 text-white`}
 
                 >
-                  Animals
+                  {hobby}
                 </div>
-                <div
-                  className={`px-2 py-1 rounded-full border-2 mx-2 border-red-400 font-semibold text-sm
-          bg-red-400 text-white`}
-
-                >
-                  Animals
-                </div>
-                <div
-                  className={`px-2 py-1 rounded-full border-2 mx-2 border-red-400 font-semibold text-sm
-          bg-red-400 text-white`}
-
-                >
-                  Animals
-                </div>
+                ))}
+               
                 </div>
               </div>
               <div className="chat-window flex flex-col items-center w-full h-full">

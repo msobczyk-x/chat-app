@@ -8,50 +8,12 @@ import { sc } from "../../context/socket";
 const MyChats = (props: any) => {
   const username = localStorage.getItem("username");
   const [activeList, setActiveList] = useState([] as any);
-  const [userPairs, setUserPairs] = useState<string[]>([] as any);
+
   const [filteredActiveList, setFilteredActiveList] = useState([] as any);
   const [filteredOfflineList, setFilteredOfflineList] = useState([] as any);
 
-  const fetchData = () => {
-    axios
-      .get(
-        `http://localhost:3000/api/getUserPairs/${localStorage.getItem(
-          "username"
-        )}`
-      )
-      .then((response) => {
-        setUserPairs(response.data.data[0].pairs);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
 
-  const filterList = (list: Array<String>, list2: Array<String>) => {
-    return [
-      ...new Set(
-        list.filter((item) => {
-          return list2.includes(item);
-        })
-      ),
-    ];
-  };
-
-  const filterOfflineList = (list: Array<String>, list2: Array<String>) => {
-    return [
-      ...new Set(
-        list.filter((item) => {
-          return !list2.includes(item);
-        })
-      ),
-    ];
-  };
-
-  const filterActiveList = (list: Array<String>, username: string | any) => {
-    return list.filter((item) => {
-      return item !== username;
-    });
-  };
+  
 
   const calculateTime = (time: any) => {
     const date = new Date(time);
@@ -70,20 +32,41 @@ const MyChats = (props: any) => {
       return "Just now";
     }
   };
-  useEffect(() => {
-    fetchData();
-    sc.on("usersStatus", (response) => {
-      setActiveList(filterActiveList(response, username));
-      if (userPairs.length > 0) {
-        setFilteredActiveList(filterList(activeList, userPairs));
-        setFilteredOfflineList(filterOfflineList(activeList, userPairs));
-      }
-      
+
+  const filterActivePairs = (pairs: any) => {
+
+    return pairs.filter(function(obj:any) {
+      var key = Object.keys(obj)[0];
+      return obj[key] === "online";
+    }).map(function(obj:any){
+      return Object.keys(obj)[0];
     });
+
+    
+  }
+  const filterOfflinePairs = (pairs: any) => {
+    return pairs.filter(function(obj:any) {
+      var key = Object.keys(obj)[0];
+      return obj[key] !== "online";
+    });
+  }
+
+
+
+  useEffect(() => {
+
+    sc.on("usersStatus", (response) => {
+      setFilteredActiveList(filterActivePairs(response));
+      setFilteredOfflineList(filterOfflinePairs(response));
+    });
+    return () => {
+      sc.off("usersStatus");
+    }
+
   }, [activeList]);
 
   const setChatWith = (username: string) => {
-    sc.emit("")
+    sc.emit("get pair", username);
   }
   const variants = {
     open: { opacity: 1, x: 0 },
@@ -117,7 +100,8 @@ const MyChats = (props: any) => {
         }`}
       >
         {filteredActiveList.map((item: any, index:any) => (
-          <button key={index}
+          <button
+            key={index}
           onClick={() => setChatWith(item)}
           
             className={`chat-item flex flex-row justify-between items-center w-full p-2 bg-slate-50`}
@@ -130,18 +114,22 @@ const MyChats = (props: any) => {
           </button>
         ))}
 
-        {filteredOfflineList.map((item: any, index:any) => (
-          <button key={index}
+        {filteredOfflineList.map((item: any, key: any) => (
+          
+            <button key={key}
             className="chat-item flex flex-row justify-between items-center w-full p-2 bg-slate-100"
             disabled
           >
             <div className="chat-status pl-5 ">
               <span className="dot"></span>
             </div>
-            <div className="chat-name p-3 font-semibold">{item}</div>
-            <div className="time text-sm">{}</div>
+            <div className="chat-name p-3 font-semibold">{item.key}</div>
+            <div className="time text-sm">{calculateTime(item.value)}</div>
           </button>
-        ))}
+          ))
+          }
+          
+ 
       </motion.div>
     </div>
   );

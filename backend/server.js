@@ -9,8 +9,12 @@ const connectDB = require("./config/db.js");
 const {
   saveMessagesToDB,
   saveUserPairsToDB,
+  getUserPairs,
+  getUserStatus,
+  saveUserStatus,
 } = require("./utils/serverControlles");
 const cors = require("cors");
+const { unwatchFile } = require("fs");
 
 const app = express();
 const http = require("http").Server(app);
@@ -62,21 +66,18 @@ let users = [];
 let room = "";
 let messages = {};
 let freeUserLen = 0;
-let usersStatus = [];
+let usersStatus = {};
 let userPairs = {};
+let allUserPairs = {};
 let acceptsPair = {};
 let currentPair = {};
 let previousPair = {};
-
+let usersPairsStatus = [];
 io.on("connection", (socket) => {
   console.log("a user connected");
   let username = "";
 
   socket.emit("connected");
-
-  setInterval(() => {
-    socket.emit("usersStatus", usersStatus);
-  }, 3000);
 
   socket.on("findMatch", () => {
     const userHobby = users.find((user) => user.socket.id === socket.id);
@@ -122,8 +123,21 @@ io.on("connection", (socket) => {
     if (count > 0) {
       currentPair[best.username] = userHobby;
       currentPair[userHobby.username] = best;
-      socket.emit("match", `${best.socket.id} ${socket.id}`);
-      socket.to(best.socket.id).emit("match", `${best.socket.id} ${socket.id}`);
+      console.log("matched");
+      socket.emit(
+        "match",
+        `${best.socket.id} ${socket.id}`,
+        userHobby.hobby,
+        best.hobby
+      );
+      socket
+        .to(best.socket.id)
+        .emit(
+          "match",
+          `${best.socket.id} ${socket.id}`,
+          userHobby.hobby,
+          best.hobby
+        );
       users.forEach((user) => {
         if (user.socket.id === socket.id || user.socket.id === best.socket.id) {
           user.status = 1;
@@ -145,7 +159,7 @@ io.on("connection", (socket) => {
         }
       });
     }
-    
+
     let prevPair = previousPair[username]
       ? previousPair[username].username
       : false;
@@ -173,16 +187,23 @@ io.on("connection", (socket) => {
     }
   });
 
-  socket.on("register username", (newUsername, hobby) => {
+  socket.on("register username", async (newUsername, hobby) => {
     username = newUsername;
-    usersStatus.push(username);
+    // usersStatus[username] = "online";
+    saveUserStatus(username, "online");
+    allUserPairs[username] = await getUserPairs(username);
+
+    // usersStatus.push(username);
     users.push({
       socket: socket,
       username: newUsername,
       hobby: hobby,
       status: 1,
     });
-
+    socket.emit("usersStatus", await getUserStatus(allUserPairs[username]));
+    setInterval(async () => {
+      socket.emit("usersStatus", await getUserStatus(allUserPairs[username]));
+    }, 3000);
     acceptsPair[username] = null;
     socket.emit("username registered");
   });
@@ -216,15 +237,30 @@ io.on("connection", (socket) => {
       .emit("chat message", user, message);
   });
 
-  socket.on("get pair", (username) => {
+  socket.on("get pair", (nickname) => {
+    const userToPair = users.find((user) => user.username === nickname);
+    socket.to(userToPair.socket.id).emit("accept conversation");
+  });
+  socket.on("accepted conversation", (nickname) => {
     const currentUser = users.find((user) => user.socket.id === socket.id);
-    const userToPair = users.find((user) => user.username === username);
+    const userToPair = users.find((user) => user.username === nickname);
     currentPair[currentUser.username] = userToPair;
     currentPair[userToPair.username] = currentUser;
-    socket.emit("match", `${userToPair.socket.id} ${socket.id}`);
+
+    socket.emit(
+      "match",
+      `${userToPair.socket.id} ${socket.id}`,
+      currentUser.hobby,
+      userToPair.hobby
+    );
     socket
-      .to(best.socket.id)
-      .emit("match", `${userToPair.socket.id} ${socket.id}`);
+      .to(userToPair.socket.id)
+      .emit(
+        "match",
+        `${userToPair.socket.id} ${socket.id}`,
+        currentUser.hobby,
+        userToPair.hobby
+      );
     users.forEach((user) => {
       if (
         user.socket.id === socket.id ||
@@ -233,6 +269,9 @@ io.on("connection", (socket) => {
         user.status = 1;
       }
     });
+  });
+  socket.on("not accepted conversation", (nickname) => {
+    socket.emit("pair not accepted");
   });
 
   socket.on("accept result", (nickname, result) => {
@@ -244,8 +283,6 @@ io.on("connection", (socket) => {
       console.log("not paired");
     } else if (result && acceptsPair[currentPair[nickname].username]) {
       console.log("paired");
-      socket.emit("bothAccepted");
-      socket.to(currentPair[username].socket.id).emit("bothAccepted");
 
       userPairs[nickname]
         ? userPairs[nickname].push(currentPair[nickname].username)
@@ -254,6 +291,14 @@ io.on("connection", (socket) => {
       userPairs[currentPair[nickname].username]
         ? userPairs[currentPair[nickname].username].push(nickname)
         : (userPairs[currentPair[nickname].username] = [nickname]);
+      saveUserPairsToDB(username, userPairs[username]);
+      saveUserPairsToDB(
+        currentPair[nickname].username,
+        userPairs[currentPair[nickname].username]
+      );
+
+      socket.emit("bothAccepted");
+      socket.to(currentPair[username].socket.id).emit("bothAccepted");
     }
   });
 
@@ -265,10 +310,12 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", function () {
     console.log("user disconnected");
-    usersStatus[
-      username
-    ] = `${new Date().toLocaleDateString()} ${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}`;
-    // let tmpUser = users.find((user) => user.socket.id === socket.id);
+    saveUserStatus(
+      username,
+      `${new Date().toLocaleDateString()} ${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}`
+    );
+
+    let tmpUser = users.find((user) => user.socket.id === socket.id);
     if (currentPair[username]) {
       socket.to(currentPair[username].socket.id).emit("user disconnected");
       saveMessagesToDB(
@@ -277,7 +324,6 @@ io.on("connection", (socket) => {
         room,
         currentPair[username].username
       );
-      saveUserPairsToDB(username, userPairs[username]);
       // acceptsPair[currentPair[username].socket.username] = null;
     }
     // console.log(user_pairs);

@@ -12,4 +12,10 @@ const userPairsSchema = new mongoose.Schema({
 });
 const userPairs = mongoose.model("UserPairs", userPairsSchema);
 
-module.exports = { ChatRoom, userPairs };
+const userStatusSchema = new mongoose.Schema({
+  username: String,
+  status: String,
+});
+const userStatus = mongoose.model("UserStatus", userStatusSchema);
+
+module.exports = { ChatRoom, userPairs, userStatus };
