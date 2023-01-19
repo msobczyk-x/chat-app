@@ -4,57 +4,73 @@ import { DownOutlined, UpOutlined } from "@ant-design/icons";
 import { motion } from "framer-motion";
 import axios from "axios";
 import { sc } from "../../context/socket";
-import { key } from "localforage";
-
 
 const MyChats = (props: any) => {
-  const [activeList, setActiveList] = useState([]);
-  const [userPairs, setUserPairs] = useState([]);
-  const [filteredActiveList, setFilteredActiveList] = useState([]);
-    const [filteredOfflineList, setFilteredOfflineList] = useState([]);
+  const username = localStorage.getItem("username");
+  const [activeList, setActiveList] = useState([] as any);
+
+  const [filteredActiveList, setFilteredActiveList] = useState([] as any);
+  const [filteredOfflineList, setFilteredOfflineList] = useState([] as any);
 
 
+  
 
-  const fetchData = () => {
-    axios
-      .get(
-        `http://localhost:3000/api/getUserPairs/${localStorage.getItem(
-          "username"
-        )}`
-      )
-      .then((response) => {
-        setUserPairs(response.data.data[0].pairs);
-
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+  const calculateTime = (time: any) => {
+    const date = new Date(time);
+    const now = new Date();
+    const diff = now.getTime() - date.getTime();
+    const minutes = Math.floor(diff / 1000 / 60);
+    const hours = Math.floor(minutes / 60);
+    const days = Math.floor(hours / 24);
+    if (days > 0) {
+      return `${days} days ago`;
+    } else if (hours > 0) {
+      return `${hours} hours ago`;
+    } else if (minutes > 0) {
+      return `${minutes} minutes ago`;
+    } else {
+      return "Just now";
+    }
   };
 
-  function filterOfflinePairs (list:any, activeList:any) {
-    return list.filter((item:any) => !activeList.includes(item));
-    }
+  const filterActivePairs = (pairs: any) => {
 
-  function filterUserPairs (list:any, activeList:any) {
-    return list.filter((item:any) => activeList.includes(item));
+    return pairs.filter(function(obj:any) {
+      var key = Object.keys(obj)[0];
+      return obj[key] === "online";
+    }).map(function(obj:any){
+      return Object.keys(obj)[0];
+    });
+
+    
+  }
+  const filterOfflinePairs = (pairs: any) => {
+    return pairs.filter(function(obj:any) {
+      var key = Object.keys(obj)[0];
+      return obj[key] !== "online";
+    });
   }
 
-function filterList (list: any) {
-    return list.filter((item:any) => list.includes(item));
 
 
-}
   useEffect(() => {
-    sc.on("users_status", (response) => {
-    setActiveList(filterList(response));
-    setFilteredActiveList(filterUserPairs(userPairs, activeList));
-    setFilteredOfflineList(filterOfflinePairs(userPairs, activeList));
-      fetchData();
+
+    sc.on("usersStatus", (response) => {
+      setFilteredActiveList(filterActivePairs(response));
+      setFilteredOfflineList(filterOfflinePairs(response));
       
+    
     });
+    return () => {
+      sc.off("usersStatus");
+    }
+
   }, [activeList]);
 
-
+  const setChatWith = (username: string) => {
+    console.log("setChatWith", username);
+    sc.emit("get pair", username);
+  }
   const variants = {
     open: { opacity: 1, x: 0 },
     closed: { opacity: 0, x: "-100%" },
@@ -86,29 +102,42 @@ function filterList (list: any) {
           isExpanded && "hidden"
         }`}
       >
-        {filteredActiveList.map((item: any, index) => (
-
-        <button className={`chat-item flex flex-row justify-between items-center w-full p-2 bg-slate-50`} key={index}>
-          <div className="chat-status pl-5 ">
-            <span className="dot-online"></span>
-          </div>
-          <div className="chat-name p-3">{item}</div>
-          <div className="time text-sm">Online</div>
-        </button>
+        {filteredActiveList.map((item: any, index:any) => (
+          <button
+            key={index}
+          onClick={() => setChatWith(item)}
+          
+            className={`chat-item flex flex-row justify-between items-center w-full p-2 bg-slate-50`}
+          >
+            <div className="chat-status pl-5 ">
+              <span className="dot-online"></span>
+            </div>
+            <div className="chat-name p-3 font-semibold">{item}</div>
+            <div className="time text-sm">Online</div>
+          </button>
         ))}
 
-{filteredOfflineList.map((item: any, index) => (
+        {filteredOfflineList.map((item: any, key: any) => {
+          let user = Object.keys(item)[0];
+          let date = Object.values(item)[0];
+          return (
+          
+            <button key={key}
+            className="chat-item flex flex-row justify-between items-center w-full p-2 bg-slate-200"
+            disabled
+          >
+            <div className="chat-status pl-5 ">
+              <span className="dot"></span>
+            </div>
+            <div className="chat-name p-3 font-semibold">{user}</div>
+            <div className="time text-sm">{calculateTime(date)}</div>
+          </button>
+          )})
+          
 
-<button className="chat-item flex flex-row justify-between items-center w-full p-2 bg-slate-100" key={index} disabled>
-  <div className="chat-status pl-5 ">
-    <span className="dot"></span>
-  </div>
-  <div className="chat-name p-3">{item}</div>
-  <div className="time text-sm">...5 min ago</div>
-</button>
-))}
-
-
+        }
+          
+ 
       </motion.div>
     </div>
   );

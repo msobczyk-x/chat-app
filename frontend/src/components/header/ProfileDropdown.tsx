@@ -35,7 +35,7 @@ const ProfileDropdown = (props: any) => {
             isActive ? "border-b-2 border-red-500" : "null"
           }
           onClick={() => {
-            window.location.reload();
+            /* window.location.reload(); */
           }}
         >
           Chat
