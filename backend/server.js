@@ -220,7 +220,10 @@ io.on("connection", (socket) => {
       ];
     }
 
-    if (!allUserPairs[username].includes(currentPair[username].username))
+    if (
+      currentPair[username] &&
+      !allUserPairs[username].includes(currentPair[username].username)
+    )
       if (messages[room].length === 5) {
         socket.to(currentPair[username].socket.id).emit("accept pair");
         socket.emit("accept pair");

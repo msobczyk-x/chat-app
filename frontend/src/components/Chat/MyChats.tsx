@@ -119,7 +119,7 @@ const MyChats = (props: any) => {
 
         {filteredOfflineList.map((item: any, key: any) => {
           let user = Object.keys(item)[0];
-          let date = Object.values(item)[0];
+          let date:any = Object.values(item)[0];
           return (
           
             <button key={key}
@@ -130,7 +130,7 @@ const MyChats = (props: any) => {
               <span className="dot"></span>
             </div>
             <div className="chat-name p-3 font-semibold">{user}</div>
-            <div className="time text-sm">{calculateTime(date)}</div>
+            <div className="time text-sm">{date}</div>
           </button>
           )})
           

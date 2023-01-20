@@ -23,8 +23,10 @@ export const ChangePassword = () => {
         })
         .then((res) => {
           console.log(res.data.message);
-          setMessageSuccess(res.data.message);
-        });
+          setMessageSuccess("Password changed successfully");
+        }).catch((err) => {
+          setMessageError(err.response.data.message);
+        });;
     }
   };
 

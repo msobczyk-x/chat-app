@@ -8,6 +8,7 @@ import axios from "axios";
 export const ChangeHobby = () => {
   const [interest, setInterest] = React.useState<any>([]);
   const [errorMessage, setErrorMessage] = React.useState("");
+  const [messageSuccess, setMessageSuccess] = React.useState<string>("");
 
   const handleChecked = (e: any) => {
     const hobby = e.target.innerText;
@@ -60,7 +61,7 @@ export const ChangeHobby = () => {
         hobby: interest,
       })
       .then((res) => {
-        
+        setMessageSuccess("Changed your hobby successfully");
       })
       .catch((err) => {
         setErrorMessage(err.response.data.message);
@@ -76,6 +77,7 @@ export const ChangeHobby = () => {
         transition={{ duration: 0.5 }}
       >
         <div className=" backdrop-blur-3xl w-96 flex flex-col justify-center items-center rounded-lg mt-10 p-5 md:w-128">
+        
           {errorMessage && interest.length == 0 && (
             <MessageBox message={errorMessage} variant="error" />
           )}
@@ -86,7 +88,7 @@ export const ChangeHobby = () => {
             <div className="flex flex-wrap justify-center items-center">
               {hobbiesList}
             </div>
-
+            {messageSuccess && <MessageBox message={messageSuccess} variant="success" />}
             <button
               className="w-80 font-bold h-10 rounded-lg bg-slate-300 p-2 mt-5 hover:bg-slate-600 transition ease-in-out delay-150"
               type="submit"

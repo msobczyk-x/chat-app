@@ -96,7 +96,8 @@ const calculateTime = (prevTime) => {
 
   let res = timeDiff;
   if (days > 0) res = `${days} days ago`;
-  else if (hours > 0) res = `${hours} hours ago`;
+  else if (hours > 0)
+    res = hours > 1 ? `${hours} hours ago` : `${hours} hour ago`;
   else if (minutes > 0) res = `${minutes} min ago`;
   else if (seconds > 0) res = `${seconds} sec ago`;
   return res;

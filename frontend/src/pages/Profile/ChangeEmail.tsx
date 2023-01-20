@@ -22,7 +22,10 @@ export const ChangeEmail = () => {
         axios.put(`http://localhost:3000/api/updateUser/${username}`, {
             email: newEmail
         }).then(res => {
-            setMessageSuccess(res.data.message)})
+            setMessageSuccess("Email changed successfully")})
+            .catch((err) => {
+              setMessageError(err.response.data.message);
+            });
 
     }
 }

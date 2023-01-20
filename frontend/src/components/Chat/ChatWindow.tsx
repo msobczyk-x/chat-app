@@ -134,7 +134,7 @@ const notAcceptedModal = () => {
     }, secondsToGo * 1000);
   };
 
-
+  const [leftRoom, setLeftRoom] = useState(false);
   const [userInConvoModal, setUserInConvoModal] = useState(false);
   const [modal2Open, setModal2Open] = useState(false);
   let newRoom: string;
@@ -150,8 +150,9 @@ const notAcceptedModal = () => {
       setStrangerUsername("");
       setSharedHobbies([]);
       setWaitingForAccept(false);
- 
+      setLeftRoom(true);
     sc.emit("leave room", newRoom);
+    setStatus("Connected");
   };
 
   useEffect(() => {
@@ -160,14 +161,20 @@ const notAcceptedModal = () => {
       setStatus("Connected");
     }
   }, []);
+  const filterHobbies = (hobbies: string[], hobbies2: string[]) => {
+    return [
+      ...new Array(
+        hobbies.filter((item) => {
+          return hobbies2.includes(item);
+        })
+      ).slice(0, 3),
+    ];
+  };
 
   useEffect(() => {
     sc.on("connection", () => {
       sc.emit("findMatch");
     });
-    sc.on("left room",()=>{
-      sc.emit("leave room", newRoom);
-    })
     sc.on("accept pair", () => {
       console.log("accept pair");
       setStatus("AcceptionStatus");
@@ -191,32 +198,27 @@ const notAcceptedModal = () => {
     //   sc.emit("register username", username);
     // })
      
-    sc.on("tryAgain", () => {
-        sc.emit("tryToFindMatch");
-      }
-    )
-    
+      sc.on("tryAgain", () => {
+        if (status === "LookingForPair"){
+          sc.emit("tryToFindMatch");
+        }
+        
+      });
 
-    const filterHobbies = (hobbies: string[], hobbies2: string[]) => {
-      return [
-        ...new Array(
-          hobbies.filter((item) => {
-            return hobbies2.includes(item);
-          })
-        ).slice(0, 3),
-      ];
-    };
-
-    sc.on("match", (room, userHobby, strangerHobby, strangerUsername) => {
+      sc.on("left room",()=>{
+        sc.emit("leave room", newRoom);
+      })
+    sc.on("match", (room, userHobby, strangerHobby, strangerUsername2) => {
       console.log(room);
       newRoom = room;
    
-     console.log("match",strangerUsername);
-      axios.get(`http://localhost:3000/api/getUserChats/${username}/${strangerUsername}`).then((res) => {
-        console.log(res.data);
-        setUserMessages(res.data);
-      })
+     console.log("match",strangerUsername2);
     
+     axios.get(`http://localhost:3000/api/getUserChats/${username}/${strangerUsername2}`).then((res) => {
+      console.log(res.data);
+      setUserMessages(res.data);
+    })
+     
     
       setIsConnected(true);
         
@@ -234,6 +236,7 @@ const notAcceptedModal = () => {
     sc.on("accepted conversation", (strangerUsername) => {
       console.log("accepted conversation", strangerUsername);
       setStrangerUsername(strangerUsername);
+      
       console.log("accepted conversation");
 
       });
@@ -281,6 +284,8 @@ const notAcceptedModal = () => {
       sc.off("accepted conversation");
       sc.off("pair not accepted");
       sc.off("waiting for accept from pair");
+      sc.off("left room");
+      sc.off("leave room");
 
     };
   }, []);
@@ -464,8 +469,8 @@ const notAcceptedModal = () => {
             </div>
           ),
           LookingForPair: (
-            <div className="w-full h-full items-center justify-center text-bold flex flex-row flex-wrap backdrop-blur-lg p-0 m-0">
-              <p className="text-[2.5rem] text-black font-black">
+            <div className="w-full h-full items-center justify-center text-bold flex flex-col md:flex-row flex-wrap backdrop-blur-lg p-0 m-0">
+              <p className="text-[2.5rem] text-black font-black text-center">
                 Searching for your new
               </p>
               <TextTransition
@@ -478,14 +483,14 @@ const notAcceptedModal = () => {
             </div>
           ),
           WaitingForAcceptFromPair: (
-            <Spinner className="" text="Waiting for acceptation" />
+            <Spinner className="" text="Waiting for pair to accept" />
           ),
           Disconnected: (
             <div className="w-full h-full items-center justify-center font-bold flex flex-col flex-wrap backdrop-blur-lg p-0 m-0 text-[3rem]">
               <div className="">
-                <div className="w-full h-full items-center justify-center text-bold flex flex-row flex-wrap backdrop-blur-lg">
-                  <p className="text-[2.5rem] text-black font-black pr-6">
-                    Stranger left the chat
+                <div className="w-full h-full items-center justify-center text-bold flex flex-col md:flex-row flex-wrap backdrop-blur-lg">
+                  <p className="text-[2.5rem] text-black font-black md:pr-6 text-center">
+                    {leftRoom ? "You" : "Stranger" } left the chat
                   </p>
                   <TextTransition
                     inline
@@ -510,7 +515,7 @@ const notAcceptedModal = () => {
           AcceptionStatus: (
             <div className="w-full h-full items-center justify-center font-bold flex flex-col flex-wrap backdrop-blur-lg p-0 m-0">
               {waitingForAccept ? (
-                <Spinner className="" text="Waiting for acceptation" />
+                <Spinner className="" text="Waiting for pair to accept" />
               ) : (
                 <div className="w-full h-full items-center justify-center text-bold flex flex-col flex-wrap backdrop-blur-lg p-0 m-0 text-[3rem]">
                   <h1 className="mb-12 text-center">Do you like him/her ?</h1>
