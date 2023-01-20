@@ -76,7 +76,6 @@ let usersPairsStatus = [];
 io.on("connection", (socket) => {
   console.log("a user connected");
   let username = "";
-
   socket.emit("connected");
 
   socket.on("findMatch", () => {
@@ -195,7 +194,7 @@ io.on("connection", (socket) => {
     socket.emit("usersStatus", await getUserStatus(allUserPairs[username]));
     setInterval(async () => {
       socket.emit("usersStatus", await getUserStatus(allUserPairs[username]));
-    }, 3000);
+    }, 10000);
     acceptsPair[username] = null;
     socket.emit("username registered");
   });
@@ -350,7 +349,9 @@ io.on("connection", (socket) => {
     console.log("user disconnected");
     saveUserStatus(
       username,
-      `${new Date().toLocaleDateString()} ${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}`
+      `${
+        new Date().toISOString().split("T")[0]
+      } ${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}`
     );
 
     if (currentPair[username]) {

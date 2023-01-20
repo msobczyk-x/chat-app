@@ -143,12 +143,13 @@ const getUserChats = async function (req, res) {
   const data = await ChatRoom.find({ username: username });
   let messages = [];
   // roomMessages = data.pair;
-
-  for (let el of data[0].roomMessages) {
-    if (el.pair === pair) {
-      messages = el.messages;
+  if (data[0])
+    for (let el of data[0].roomMessages) {
+      if (el.pair === pair) {
+        messages = el.messages;
+      }
     }
-  }
+    
   if (data) {
     res.status(200).json(messages);
   } else {

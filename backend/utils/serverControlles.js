@@ -74,9 +74,31 @@ const getUserStatus = async (usernames) => {
   for (const user of usernames) {
     const data = await userStatus.findOne({ username: user });
     if (data) {
-      res.push({ [user]: data.status });
+      if (data.status === "online") res.push({ [user]: data.status });
+      else res.push({ [user]: calculateTime(data.status) });
     }
   }
+  return res;
+};
+
+const calculateTime = (prevTime) => {
+  const timeNow = `${
+    new Date().toISOString().split("T")[0]
+  } ${new Date().getHours()}:${new Date().getMinutes()}:${new Date().getSeconds()}`;
+  let date1 = new Date(Date.parse(prevTime));
+  let date2 = new Date(Date.parse(timeNow));
+
+  let timeDiff = date2.getTime() - date1.getTime();
+  let seconds = Math.floor(timeDiff / 1000);
+  let minutes = Math.floor(timeDiff / (1000 * 60));
+  let hours = Math.floor(timeDiff / (1000 * 60 * 60));
+  let days = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+
+  let res = timeDiff;
+  if (days > 0) res = `${days} days ago`;
+  else if (hours > 0) res = `${hours} hours ago`;
+  else if (minutes > 0) res = `${minutes} min ago`;
+  else if (seconds > 0) res = `${seconds} sec ago`;
   return res;
 };
 
